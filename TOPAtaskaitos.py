@@ -15,26 +15,43 @@ st.markdown("""
         font-size: 16px;
         min-width: 200px;
     }
-    /* Hover effect for general buttons */
-    .stButton > button:hover {
-        background-color: #f0f0f0;
+
+    /* Primary buttons with no background color */
+    .stButton > button {
+        background-color: transparent !important;  /* No background */
+        color: #333 !important;                    /* Dark text color */
+        border: 2px solid #ccc !important;         /* Light gray border */
+        font-size: 16px;
+        border-radius: 8px;
+        padding: 10px 30px;
+        min-width: 200px;
+        cursor: pointer;
     }
-    /* Centered light green button styling */
+
+    .stButton > button:hover {
+        background-color: #f0f0f0 !important;  /* Light gray on hover */
+    }
+
+    /* Secondary button with a nice blue color */
     .submit-button {
         display: flex;
         justify-content: center;
     }
+
     .submit-button > button {
-        background-color: #90EE90 !important;
-        color: black !important;
+        background-color: #88ddaf !important;  /* Nice green */
+        color: white !important;               /* White text color */
+        font-size: 16px;
         border-radius: 8px;
         padding: 10px 30px;
-        font-size: 16px;
         min-width: 200px;
     }
+
     .submit-button > button:hover {
-        background-color: #77dd77 !important;
+        background-color: #70c996 !important;  /* Darker green on hover */
+        border: 2px solid #808080 !important;  /* Grey border on hover */
     }
+
     /* Sidebar styling */
     .css-1d391kg {
         background-color: #f7f9fc !important;
@@ -42,6 +59,7 @@ st.markdown("""
         border-radius: 10px !important;
         box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1) !important;
     }
+
     /* Sidebar title styling */
     .sidebar-title {
         font-size: 22px;
@@ -50,6 +68,7 @@ st.markdown("""
         text-align: center;
         margin-bottom: 10px;
     }
+
     /* Sidebar content styling */
     .sidebar-content {
         font-size: 16px;
@@ -59,6 +78,11 @@ st.markdown("""
         border-radius: 8px;
         border-left: 4px solid #28a745;
         margin-bottom: 20px;
+    }
+
+    /* Input field error styling */
+    .input-error {
+        border: 2px solid red !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -112,7 +136,7 @@ st.markdown("""
 def load_data_from_excel(file_path):
     return pd.read_excel(file_path, engine='openpyxl')
 
-file_path = r"/Users/nedasvaitkus/Desktop/ISM/AI course/AtaskaituDuomenis.xlsx"
+file_path = r"C:\DAS server data\TOP_forma\AtaskaituDuomenis.xlsx"
 df = load_data_from_excel(file_path)
 
 # Assuming the report titles are in a column named 'Pavadinimas'
@@ -191,17 +215,15 @@ def display_report_form(report_index):
             key=f"kategorija_{report_index}",
             disabled=disabled_state
         )
-
-        # If "Kita" is selected, show a st_tags input field for additional categories
+        
         custom_categories = []
         if "Kita" in Kategorija:
-            custom_categories = st_tags(
-                label="Įveskite papildomą kategoriją (-as):",
-                text="Įrašykite naują kategoriją ir paspauskite Enter",
-                value=[],
-                key=f"custom_category_{report_index}"
-            )
-            # Append custom categories to selected categories
+            custom_category_input = st.text_input(
+                "Įveskite papildomą kategoriją (-as):",
+                key=f"custom_category_{report_index}")
+    
+            if custom_category_input:
+                custom_categories = [cat.strip() for cat in custom_category_input.split(",") if cat.strip()]
             Kategorija.extend(custom_categories)
 
         st.markdown("---")
@@ -217,16 +239,13 @@ def display_report_form(report_index):
         st.markdown("---")
         st.subheader("Naudojimas")
 
-        NaudojimoDaznumas = st.selectbox("Kiek dažnai ataskaita yra naudojama? *", 
-                                  ['Pasirinkite...', 
-                                   'Naudojama tik išimtiniais atvejais', 
-                                   'Mažiau nei 1 kartą per savaitę', 
-                                   '2-5 kartai per savaitę', 
-                                   '6-10 kartai per savaitę',
-                                   '11-20 kartai per savaitę', 
-                                   'Daugiau nei 20 kartų per savaitę',
-                                   'Sunku pasakyti, priklauso nuo daugelio veiksnių'],
-                                  key=f"naudojimo_daznumas_{report_index}", disabled=disabled_state)
+        NaudojimoDaznumas = st.selectbox(
+            "Kiek dažnai ataskaita yra naudojama? *",
+            ['Pasirinkite...', 'Naudojama tik išimtiniais atvejais', 'Labai retai', 'Kartais', 'Dažnai', 'Labai dažnai', 'Nuolat'],
+            key=f"naudojimo_daznumas_{report_index}",
+            disabled=disabled_state)
+        if NaudojimoDaznumas == "Pasirinkite...":
+            st.markdown(f"<style>#naudojimo_daznumas_{report_index} {{border: 2px solid red !important;}}</style>", unsafe_allow_html=True)
 
         # Place the radio buttons in two columns
         col5, col6 = st.columns(2)
@@ -304,30 +323,54 @@ else:
 # Show button to submit the form only if personal info is filled and there is at least one report
 if is_personal_info_filled() and st.session_state.reports:
     st.markdown("---")
-    
-    # Center the "Baigti pildyti formą" button and make it green
-    st.markdown('<div class="submit-button">', unsafe_allow_html=True)
-    if st.button("Baigti pildyti formą"):
-        missing_fields = check_for_missing_fields()
-        if missing_fields:
-            st.warning("Nepavyko pateikti duomenų, nes kai kurių ataskaitų laukų trūksta:")
-            for report_index, fields in missing_fields:
-                st.warning(f"Ataskaita {report_index}: trūksta laukų: {', '.join(fields)}")
-        else:
-            # Handle submission of reports and user info
-            st.session_state.is_form_submitted = True
-            st.success("Ataskaitos sėkmingai pateiktos!")
+    # Use st.columns to center the button
+# Example function to check if any reports are filled out
+# Example function to check if any reports are filled
+def is_report_filled():
+    # This function should check if there's at least one report in the session state that is filled
+    # Assuming that if at least one report has a non-empty "Pavadinimas", it's considered filled
+    for report in st.session_state.reports:
+        if report.get("Pavadinimas") and report["Pavadinimas"] != "Pasirinkite...":
+            return True
+    return False
 
-            # Display submitted information
-            st.markdown("## Jūsų pateikta informacija:")
-            st.subheader("Asmeninė informacija")
-            st.write(f"**Vardas:** {st.session_state.user_info['Vardas']}")
-            st.write(f"**Pavardė:** {st.session_state.user_info['Pavarde']}")
-            st.write(f"**El. Paštas:** {st.session_state.user_info['El. Paštas']}")
-            
-            st.markdown("## Ataskaitos:")
-            for i, report in enumerate(st.session_state.reports):
-                st.write(f"### Ataskaita {i + 1}")
-                for key, value in report.items():
-                    st.write(f"**{key}:** {value}")
-    st.markdown('</div>', unsafe_allow_html=True)
+# Check if any reports are filled before showing the submission button
+if is_report_filled():
+    # Center the button using st.columns
+    col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns, center column is wider
+    with col2:
+        # Button in the center column
+        if st.button("Baigti pildyti formą ir siųsti duomenis"):
+            missing_fields = check_for_missing_fields()
+            if missing_fields:
+                st.session_state.form_errors = missing_fields
+            else:
+                # Handle submission of reports and user info
+                st.session_state.is_form_submitted = True
+                st.session_state.form_errors = None  # Clear any previous errors
+
+# Now handle warnings and success messages outside the columns
+if "form_errors" in st.session_state and st.session_state.form_errors:
+    # Warning messages, not inside the columns, ensuring they are left-aligned
+    for report_index, fields in st.session_state.form_errors:
+        st.warning(f"Ataskaita {report_index}: trūksta laukų: {', '.join(fields)}")
+
+# If the form is successfully submitted
+if st.session_state.get("is_form_submitted", False):
+    # Left-aligned success message
+    st.success("Ataskaitos sėkmingai pateiktos!")
+
+    # Display submitted information
+    st.markdown("## Jūsų pateikta informacija:")
+    st.subheader("Asmeninė informacija")
+    st.write(f"**Vardas:** {st.session_state.user_info['Vardas']}")
+    st.write(f"**Pavardė:** {st.session_state.user_info['Pavarde']}")
+    st.write(f"**El. Paštas:** {st.session_state.user_info['El. Paštas']}")
+    
+    st.markdown("## Ataskaitos:")
+    for i, report in enumerate(st.session_state.reports):
+        st.write(f"### Ataskaita {i + 1}")
+        for key, value in report.items():
+            st.write(f"**{key}:** {value}")
+
+
