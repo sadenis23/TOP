@@ -3,7 +3,7 @@ import pandas as pd
 from streamlit_tags import st_tags 
 
 # Set page layout and title
-st.set_page_config(page_title="TOP Ataskaitų Forma", layout="centered")
+st.set_page_config(page_title="Power BI Dokumentacija", layout="centered")
 
 # Initialize session state for navigation
 if 'page' not in st.session_state:
@@ -67,6 +67,22 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Custom CSS to style the button background to green
+st.markdown("""
+    <style>
+    .stButton > button {
+        background-color: #343a40;  /* Green background */
+        color: white;  /* White text */
+        font-size: 16px;  /* Adjust font size */
+        border-radius: 8px;  /* Optional: Add rounded corners */
+        padding: 10px 20px;  /* Optional: Add padding */
+    }
+    .stButton > button:hover {
+        background-color: #23272b;  /* Darker green on hover */
+        color: white;
+    }
+    </style>
+""", unsafe_allow_html=True)
 # Sidebar with a professional title and collapsible instructions
 st.sidebar.markdown(
     """
@@ -281,17 +297,16 @@ def check_for_missing_fields():
 # Show button to add new report if personal info is filled
 if st.session_state.page == 'main':
     # Title and subtitle in the center for a professional look
-    st.markdown("<h1 style='text-align: center; color: #333;'>Power BI: TOP ataskaitos pildymas ir dokumentacija </h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #333;'>Power BI: TOP ataskaitos forma ir dokumentacija </h1>", unsafe_allow_html=True)
     image_path = "/Users/nedasvaitkus/Desktop/laptop-power-bi-1024x467.jpg"  # Replace this with the path to your image
     st.image(image_path, use_column_width=True)
-    st.markdown("<h3 style='text-align: center; color: #666;'>Pasirinkite, ar norite užpildyti TOP ataskaitos formą, ar perduoti ataskaitą</h3>", unsafe_allow_html=True)
-
+    
     # Adding some vertical space for better UX
     st.markdown("<br>", unsafe_allow_html=True)
-
+    st.markdown("---")
     # Center the buttons on the page using column layout
     col1, col2 = st.columns([1, 1], gap="large")
-
+    st.markdown("---")
     with col1:
         # Styled button for "TOP Ataskaitos" with better visibility
         if st.button('TOP Ataskaitos forma'):
