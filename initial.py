@@ -281,8 +281,10 @@ def check_for_missing_fields():
 # Show button to add new report if personal info is filled
 if st.session_state.page == 'main':
     # Title and subtitle in the center for a professional look
-    st.markdown("<h1 style='text-align: center; color: #333;'>Sveiki atvykę į pagrindinį puslapį</h1>", unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align: center; color: #666;'>Pasirinkite veiksmą norėdami tęsti</h3>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #333;'>Power BI: TOP ataskaitos pildymas ir dokumentacija </h1>", unsafe_allow_html=True)
+    image_path = "/Users/nedasvaitkus/Desktop/laptop-power-bi-1024x467.jpg"  # Replace this with the path to your image
+    st.image(image_path, use_column_width=True)
+    st.markdown("<h3 style='text-align: center; color: #666;'>Pasirinkite, ar norite užpildyti TOP ataskaitos formą, ar perduoti ataskaitą</h3>", unsafe_allow_html=True)
 
     # Adding some vertical space for better UX
     st.markdown("<br>", unsafe_allow_html=True)
@@ -292,12 +294,12 @@ if st.session_state.page == 'main':
 
     with col1:
         # Styled button for "TOP Ataskaitos" with better visibility
-        if st.button('TOP Ataskaitos'):
+        if st.button('TOP Ataskaitos forma'):
             st.session_state.page = 'form'
 
     with col2:
         # "Learn More" styled button
-        st.button('Sužinoti daugiau')
+        st.button('Ataskaitos dokumentacija')
 
     # Adding some vertical space for better UX
     st.markdown("<br><br>", unsafe_allow_html=True)
