@@ -118,11 +118,11 @@ with st.sidebar.expander("Kaip pildyti TOP ataskaitų formą?", expanded=False):
 with st.sidebar.expander("Kodėl yra reikalinga turėti svarbiausių (TOP) Power BI ataskaitų sąrašą?", expanded=False):
     st.markdown("""
         <div style="background-color: #f0f4f7; padding: 20px; border-radius: 8px; border-left: 4px solid #007BFF;">
-            <ul style="font-size: 16px; color: #333;">
+            <ol style="font-size: 16px; color: #333;">
                 <li><b>Suteikti aukštesnį prioritetą</b>, ypač kai jos neatsinaujina laiku.</li>
                 <li><b>DWH galės sparčiau atnaujinti</b> lentas šioms ataskaitoms.</li>
                 <li><b>Galimybė perkelti ataskaitas</b> į naują „capacity“ erdvę, kas pagerintų jų prieinamumą ir veikimo greitį.</li>
-            </ul>
+            </ol>
         </div>
     """, unsafe_allow_html=True)
 
@@ -330,8 +330,9 @@ if st.session_state.page == 'main':
         <div class="card">
             <div class="card-title">Instrukcijos</div>
             <div class="card-content">
-                Čia rasite svarbią informaciją apie ataskaitų pateikimą ir formų pildymą. Užtikrinkite, kad visi privalomi laukai būtų tinkamai užpildyti prieš pateikiant ataskaitas.
-            </div>
+                Sveiki atvykę į DAS komandos Power BI ataskaitų dokumentacijos ir svarbiausių (TOP) ataskaitų identifikavimo sistemą.
+                Šioje aplikacijoje galite užpildyti TOP Ataskaitos formą, kad Jūsų ataskaita būtų priskirta prie prioritetinių.
+                Taip pat suteikiama galimybė užpildyti ataskaitos dokumentaciją, kuri padės pagerinti duomenų valdymą bei jų prieinamumą.
         </div>
     """, unsafe_allow_html=True)
     st.markdown("---")
