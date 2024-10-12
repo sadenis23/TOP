@@ -125,6 +125,22 @@ with st.sidebar.expander("Kodėl yra reikalinga turėti svarbiausių (TOP) Power
             </ol>
         </div>
     """, unsafe_allow_html=True)
+st.sidebar.markdown(
+    """
+    <style>
+    .sidebar .bottom-image {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        padding: 20px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+st.sidebar.markdown("<div style='height: 50px !important;'></div>", unsafe_allow_html=True)  # Optional spacer to push the image to the bottom
+image_path = "/Users/nedasvaitkus/Desktop/power-bi_logo.png"  # Replace with the actual path to your image
+st.sidebar.image(image_path, use_column_width=True)
 
 
 # Load report titles from Excel
