@@ -71,9 +71,9 @@ st.markdown("""
 st.markdown("""
     <style>
     .stButton > button {
-        background-color: #343a40;  /* Green background */
+        background-color: #343a40;  /* grey background */
         color: white;  /* White text */
-        font-size: 16px;  /* Adjust font size */
+        font-size: 22px;  /* Adjust font size */
         border-radius: 8px;  /* Optional: Add rounded corners */
         padding: 10px 20px;  /* Optional: Add padding */
     }
@@ -83,14 +83,14 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-# Sidebar with a professional title and collapsible instructions
+
 st.sidebar.markdown(
     """
     <style>
     .sidebar-title {
-        font-size: 22px;
+        font-size: 32px !important;
         font-weight: bold;
-        color: #000000;
+        color: #28a745 !important;  /* Force green color */
         text-align: center;
         margin-bottom: 10px;
     }
@@ -99,6 +99,7 @@ st.sidebar.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 with st.sidebar.expander("Kaip pildyti TOP ataskaitų formą?", expanded=False):
     st.markdown("""
@@ -297,12 +298,42 @@ def check_for_missing_fields():
 # Show button to add new report if personal info is filled
 if st.session_state.page == 'main':
     # Title and subtitle in the center for a professional look
-    st.markdown("<h1 style='text-align: center; color: #333;'>Power BI: TOP ataskaitos forma ir dokumentacija </h1>", unsafe_allow_html=True)
-    image_path = "/Users/nedasvaitkus/Desktop/laptop-power-bi-1024x467.jpg"  # Replace this with the path to your image
-    st.image(image_path, use_column_width=True)
+    st.markdown("<h1 style='text-align: center; color: #333;'>ESO Power BI ataskaitos</h1>", unsafe_allow_html=True)
     
     # Adding some vertical space for better UX
     st.markdown("<br>", unsafe_allow_html=True)
+    # Custom CSS to create a card-like widget
+    st.markdown("""
+        <style>
+        .card {
+            background-color: #f8f9fa;  /* Light background color */
+            padding: 20px;
+            border-radius: 12px;  /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);  /* Shadow for card effect */
+            margin: 20px 0;  /* Some margin on top and bottom */
+        }
+        .card-title {
+            font-size: 24px;
+            color: #343a40;  /* Dark text color for the title */
+            font-weight: bold;
+        }
+        .card-content {
+            font-size: 16px;
+            color: #6c757d;  /* Muted text color */
+            margin-top: 10px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # Card-like widget with a title and content
+    st.markdown("""
+        <div class="card">
+            <div class="card-title">Instrukcijos</div>
+            <div class="card-content">
+                Čia rasite svarbią informaciją apie ataskaitų pateikimą ir formų pildymą. Užtikrinkite, kad visi privalomi laukai būtų tinkamai užpildyti prieš pateikiant ataskaitas.
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
     st.markdown("---")
     # Center the buttons on the page using column layout
     col1, col2 = st.columns([1, 1], gap="large")
@@ -341,7 +372,7 @@ if st.session_state.page == 'form':
         
         # Center the "Baigti pildyti formą" button and make it green
         st.markdown('<div class="submit-button">', unsafe_allow_html=True)
-        if st.button("Baigti pildyti formą"):
+        if st.button("Baigti pildyti formą ir siųsti duomenis"):
             missing_fields = check_for_missing_fields()
             if missing_fields:
                 st.warning("Nepavyko pateikti duomenų, nes kai kurių ataskaitų laukų trūksta:")
