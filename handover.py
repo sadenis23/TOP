@@ -39,6 +39,12 @@ if 'data_sources' not in st.session_state:
 def add_data_source():
     st.session_state['data_sources'].append({"type": "", "details": ""})
 
+# Function to delete a data source entry
+def delete_data_source(index):
+    if st.session_state['data_sources_count'] > 1:
+        st.session_state['data_sources'].pop(index)
+        st.session_state['data_sources_count'] -= 1
+
 # Logic to loop through and display data sources
 for i in range(st.session_state['data_sources_count']):
     st.markdown(f"<span style='color:green'>**Duomenų šaltinis {i + 1}</span>**", unsafe_allow_html=True)
@@ -57,6 +63,11 @@ for i in range(st.session_state['data_sources_count']):
             placeholder="Įrašykite detales apie šaltinį", 
             key=f"details_{i}"
         )
+    
+    # Delete button below the data source
+    if st.session_state['data_sources_count'] > 1:
+        if st.button(f"Pašalinti šaltinį {i + 1}", key=f"delete_{i}"):
+            delete_data_source(i)
 
     # Only show the "Add New Data Source" button if the current data source is fully filled
     if i == st.session_state['data_sources_count'] - 1:
