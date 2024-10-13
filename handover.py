@@ -45,29 +45,29 @@ def delete_data_source(index):
         st.session_state['data_sources'].pop(index)
         st.session_state['data_sources_count'] -= 1
 
-# Logic to loop through and display data sources
+# Logic to loop through and display data sources as expandable sections
 for i in range(st.session_state['data_sources_count']):
-    st.markdown(f"<span style='color:green'>**Duomenų šaltinis {i + 1}</span>**", unsafe_allow_html=True)
-    col1, col2 = st.columns([1, 3])
+    with st.expander(f"Duomenų šaltinis {i + 1}", expanded=True):
+        col1, col2 = st.columns([1, 3])
 
-    with col1:
-        st.session_state['data_sources'][i]["type"] = st.selectbox(
-            f"Tipas {i + 1}", 
-            options=["DWH", "Sharepoint", "Excel", "API", "Kita"], 
-            key=f"type_{i}"
-        )
+        with col1:
+            st.session_state['data_sources'][i]["type"] = st.selectbox(
+                f"Tipas {i + 1}", 
+                options=["DWH", "Sharepoint", "Excel", "API", "Kita"], 
+                key=f"type_{i}"
+            )
 
-    with col2:
-        st.session_state['data_sources'][i]["details"] = st.text_area(
-            f"Detalės {i + 1}", 
-            placeholder="Įrašykite detales apie šaltinį", 
-            key=f"details_{i}"
-        )
-    
-    # Delete button below the data source
-    if st.session_state['data_sources_count'] > 1:
-        if st.button(f"Pašalinti šaltinį {i + 1}", key=f"delete_{i}"):
-            delete_data_source(i)
+        with col2:
+            st.session_state['data_sources'][i]["details"] = st.text_area(
+                f"Detalės {i + 1}", 
+                placeholder="Įrašykite detales apie šaltinį", 
+                key=f"details_{i}"
+            )
+
+        # Delete button below the data source
+        if st.session_state['data_sources_count'] > 1:
+            if st.button(f"Pašalinti šaltinį {i + 1}", key=f"delete_{i}"):
+                delete_data_source(i)
 
     # Only show the "Add New Data Source" button if the current data source is fully filled
     if i == st.session_state['data_sources_count'] - 1:
@@ -79,13 +79,49 @@ for i in range(st.session_state['data_sources_count']):
 # Section: Transformacijos Sekcija
 st.markdown("---")
 st.subheader("Transformacijos Sekcija")
-st.text_area("Pagrindiniai punktai", placeholder="Pateikite pagrindinius duomenų transformacijos veiksmus")
-st.text_input("Kodo Orchestratorius", placeholder="pvz., Jenkins, Azure Pipelines, Azure Data Factory")
-st.radio("GitLab integracija", options=["Taip", "Ne"], horizontal=True)
-st.markdown("---")
+
+# Initialize 'transformations_count' in session_state to count the transformations displayed
+if 'transformations_count' not in st.session_state:
+    st.session_state['transformations_count'] = 1  # Start with the first transformation
+
+# Ensure 'transformations' is initialized in session_state to store transformation details
+if 'transformations' not in st.session_state:
+    st.session_state['transformations'] = [{"steps": ""}]
+
+# Function to add a new transformation entry
+def add_transformation():
+    st.session_state['transformations'].append({"steps": ""})
+
+# Logic to loop through and display transformations as expandable sections
+for i in range(st.session_state['transformations_count']):
+    with st.expander(f"Transformacija {i + 1}", expanded=True):
+        st.session_state['transformations'][i]["steps"] = st.text_area(
+            f"Pagrindiniai punktai {i + 1}", 
+            placeholder="Pateikite pagrindinius duomenų transformacijos veiksmus", 
+            key=f"steps_{i}"
+        )
+
+        # Only allow deletion for transformations other than the first
+        if i > 0:
+            if st.button(f"Pašalinti transformaciją {i + 1}", key=f"delete_transform_{i}"):
+                st.session_state['transformations'].pop(i)
+                st.session_state['transformations_count'] -= 1
+
+    # Only show the "Add New Transformation" button if the current transformation is fully filled
+    if i == st.session_state['transformations_count'] - 1:
+        if st.session_state['transformations'][i]["steps"]:
+            if st.button("Pridėti naują transformaciją"):
+                add_transformation()
+                st.session_state['transformations_count'] += 1
 
 # Section: Saugumo Aspektai
+st.markdown("---")
 st.subheader("Saugumo Aspektai")
+
+# Add fields for Kodo Orchestratorius and GitLab integracija in Saugumo Aspektai section
+st.text_input("Kodo Orchestratorius", placeholder="pvz., Jenkins, Azure Pipelines, Azure Data Factory")
+st.radio("GitLab integracija", options=["Taip", "Ne"], horizontal=True)
+
 st.radio("Prieiga prie duomenų (RLS)", options=["Taip", "Ne"], horizontal=True)
 
 # Section: Ataskaitos naujinimasis
