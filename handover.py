@@ -15,7 +15,7 @@ with col2:
 st.text_input("Savininkas", placeholder="Nurodykite atsakingą asmenį")
 st.multiselect("Įrankio tipas", options=["Power BI", "Python", "Power Apps", "Excel", "Kita"])
 st.text_area("Paskirtis", placeholder="Apibrėžkite ataskaitos paskirtį ir jos naudą")
-st.multiselect("Ataskaitos tematika", options=["Finansai", "IT", "GV", "SMART", "Kita"])
+st.multiselect("Ataskaitos tematika", options=["Finansai", "IT", "GV", "SMART"])
 tags = st_tags(
     label="Jei nėra, pridėkite savo temų kategorijas:",
     text="Pridėkite temas",
@@ -25,7 +25,7 @@ tags = st_tags(
 st.write("**Pateiktos temos:**", ", ".join(tags))
 
 st.markdown("---")
-st.subheader("Duomenų Šaltiniai")
+st.subheader("Duomenų šaltiniai")
 
 # Initialize 'data_sources_count' in session_state to count the data sources displayed
 if 'data_sources_count' not in st.session_state:
@@ -78,7 +78,7 @@ for i in range(st.session_state['data_sources_count']):
 
 # Section: Transformacijos Sekcija
 st.markdown("---")
-st.subheader("Transformacijos Sekcija")
+st.subheader("Svarbios atliktos transformacijos")
 
 # Initialize 'transformations_count' in session_state to count the transformations displayed
 if 'transformations_count' not in st.session_state:
@@ -114,28 +114,34 @@ for i in range(st.session_state['transformations_count']):
                 add_transformation()
                 st.session_state['transformations_count'] += 1
 
-# Section: Saugumo Aspektai
-st.markdown("---")
-st.subheader("Saugumo Aspektai")
-
-# Add fields for Kodo Orchestratorius and GitLab integracija in Saugumo Aspektai section
-st.text_input("Kodo Orchestratorius", placeholder="pvz., Jenkins, Azure Pipelines, Azure Data Factory")
-st.radio("GitLab integracija", options=["Taip", "Ne"], horizontal=True)
-
-st.radio("Prieiga prie duomenų (RLS)", options=["Taip", "Ne"], horizontal=True)
 
 # Section: Ataskaitos naujinimasis
 st.markdown("---")
-st.subheader("Ataskaitos Atnaujinimo Grafikas")
-st.selectbox("Atnaujinimų dažnumas", options=["Kasdien", "Kas savaitę", "Kas mėnesį"])
-st.time_input("Naujinimų laikas")
-st.radio("Ar naudojamas Data Gateway?", options=["Taip", "Ne"], horizontal=True)
+st.subheader("Naujinimosi informacija")
+st.radio("Atnaujinimų dažnumas", options=["Kasdien", "Kas savaitę", "Kas mėnesį"])
+# Using time_input for a more precise time selection
+update_time = st.time_input("Pasirinkite naujinimosi laiką", value=None)
+st.write(f"**Nurodytas naujinimosi laikas**: {update_time}")
 
 # Section: Priskirtas Procesas
 st.markdown("---")
-st.subheader("Priskirtas procesas")
-st.text_input("Kokiam procesui", placeholder="Nurodykite, prie kokio proceso ar verslo srities priskirta ataskaita")
-
+st.subheader("Įrankio konfiguracija")
+st.radio("Ar naudojamas kodo orchestratorius?", options=["Taip", "Ne"], index=1,horizontal=False)
+st.radio("Ar naudojamas Data Gateway?", options=["Taip", "Ne"],index=1, horizontal=False)
+st.radio("GitLab integracija", options=["Taip", "Ne"],index=1, horizontal=False)
+st.radio("Ar yra įdiegta duomenų saugos sistema, pvz.: (RLS)", options=["Taip", "Ne"],index=1, horizontal=False)
+# Predefined list of processes or business areas
+process_options = ["L3 PROCESŲ GRUPĖ. ELEKTROS SKIRSTOMŲJŲ TINKLŲ VYSTYMAS", 
+                   "L3 PROCESŲ GRUPĖ. GAMTINIŲ DUJŲ SKIRSTOMŲJŲ DUOJETIEKIŲ VYSTYMAS",
+                   "TBD"]
+# Multiselect input for selecting multiple processes
+selected_processes = st.multiselect(
+    "Kokiems procesams priklauso įrankis?", 
+    options=process_options, 
+    placeholder="Nurodykite, prie kokio proceso ar verslo srities priskirta ataskaita"
+)
+# Display selected processes
+st.write(f"**Pasirinkti procesai**: {', '.join(selected_processes)}")
 # Section: Komentarai / Pastabos
 st.markdown("---")
 st.subheader("Komentarai / Pastabos")
