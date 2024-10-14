@@ -1,6 +1,7 @@
 import streamlit as st
 from streamlit_tags import st_tags
 import pandas as pd
+from streamlit_navigation_bar import st_navbar
 
 # Define function for each page
 def pagrindinis_page():
@@ -32,16 +33,21 @@ def pagrindinis_page():
     # Card-like widget with a title and content
     st.markdown("""
         <div class="card">
-            <div class="card-title">Instrukcijos</div>
+            <div class="card-title">Kaip efektyviai naudotis šia sistema?</div>
             <div class="card-content">
-                Sveiki atvykę į DAS komandos Power BI ataskaitų dokumentacijos ir svarbiausių (TOP) ataskaitų identifikavimo sistemą.
-                Šioje aplikacijoje galite užpildyti TOP Ataskaitos formą, kad Jūsų ataskaita būtų priskirta prie prioritetinių.
-                Taip pat suteikiama galimybė užpildyti ataskaitos dokumentaciją, kuri padės pagerinti duomenų valdymą bei jų prieinamumą.
+                Ši sistema sukurta tam, kad padėtume Jums ne tik tvarkyti ir dokumentuoti ESO Power BI ataskaitas, 
+                bet ir užtikrinti, jog svarbiausi duomenys niekada nebūtų prarasti ar nepasiekiami. Čia galite:
+                <ul>
+                    <li><b>Identifikuoti prioritetines ataskaitas</b> - pasinaudodami TOP ataskaitos forma, galite nurodyti, kurios ataskaitos yra ypatingai svarbios Jūsų skyriui ar projektui.</li>
+                    <li><b>Dokumentuoti ataskaitas</b> - tai padės užtikrinti, kad kolegos visada turės aiškią informaciją apie tai, kas atsakingas už ataskaitas, koks jų tikslas, bei kokia jų svarba.</li>
+                </ul>
+                Naudodamiesi šia sistema, ne tik optimizuosite savo kasdienes užduotis, bet ir prisidėsite prie efektyvesnio duomenų valdymo organizacijoje. Pradėkite dabar ir užtikrinkite, kad Jūsų ataskaitos būtų tiksliai ir aiškiai dokumentuotos!
             </div>
         </div>
     """, unsafe_allow_html=True)
 
 def top_ataskaitos_page():
+    st.title("TOP Ataskaitų forma")
     # Initialize session state for navigation
     if 'page' not in st.session_state:
         st.session_state.page = 'main'
@@ -703,15 +709,35 @@ def ataskaitos_dokumentacija_page():
                     next_section('section6')
                     st.success("Pateikimas baigtas. Visi duomenys automatiškai išsaugoti!")
                 st.markdown('</div>', unsafe_allow_html=True)
-# Main app logic
-def main():
-    st.sidebar.title("Navigacija")
-    page = st.sidebar.selectbox(
-        "Pasirinkite puslapį",
-        ("Pagrindinis", "TOP ataskaitos", "Ataskaitos dokumentacija")
-    )
 
-    # Navigation logic
+#------------------------------------------------------------------------------------------------------
+# Main app logic
+styles = {
+    "nav": {
+        "background-color": "rgb(123, 209, 146)",  # Light green background for the navbar
+    },
+    "div": {
+        "max-width": "32rem",  # Set max-width for the navbar content
+    },
+    "span": {
+        "border-radius": "0.5rem",  # Rounded corners for the tabs
+        "color": "rgb(49, 51, 63)",  # Text color
+        "margin": "0 0.125rem",  # Margin between tabs
+        "padding": "0.4375rem 0.625rem",  # Padding for the tabs
+    },
+    "active": {
+        "background-color": "rgba(255, 255, 255, 0.25)",  # Background for the active tab
+    },
+    "hover": {
+        "background-color": "rgba(255, 255, 255, 0.35)",  # Background for the hovered tab
+    },
+}
+
+def main():
+    # Create a navbar with custom page names
+    page = st_navbar(["Pagrindinis", "TOP ataskaitos", "Ataskaitos dokumentacija"], styles=styles)
+
+    # Display selected page content
     if page == "Pagrindinis":
         pagrindinis_page()
     elif page == "TOP ataskaitos":
@@ -721,3 +747,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
