@@ -3,10 +3,13 @@ from streamlit_tags import st_tags
 import pandas as pd
 from streamlit_navigation_bar import st_navbar
 from streamlit_option_menu import option_menu
+import matplotlib.pyplot as plt
+
+st.set_page_config(page_title="📚 ESO Dokumentacija", layout="centered")
 
 # Define function for each page
 def pagrindinis_page():
-    st.title("Sveiki atvykę į ESO ataskaitų dokumentacijos puslapį!")
+    st.title("ESO dokumentacijos sistema")
     st.sidebar.markdown("""
     <style>
     .sidebar-title {
@@ -784,25 +787,25 @@ def ataskaitos_dokumentacija_page():
 
                 with col1:
                     st.selectbox(
-                        f"Tipas {i + 1}",
+                        f"Tipas",
                         options=["DWH", "Sharepoint", "Excel", "API", "Kita"],
                         key=f"type_{i}"
                     )
                 with col2:
                     st.text_input(
-                        f"Serveris/Duomenų bazė/Schema/Lenta {i + 1}",
+                        f"Serveris/Duomenų bazė/Schema/Lenta",
                         placeholder="Įrašykite detales apie šaltinį",
                         key=f"details_{i}"
                     )
 
                 st.text_area(
-                    f"Transformacija {i + 1}",
+                    f"Transformacija",
                     placeholder="Įrašykite transformaciją (jei taikoma)",
                     key=f"transformation_{i}"
                 )
 
                 st.text_input(
-                    f"Atliekamos transformacijos nuoroda (jei taikoma) {i + 1}",
+                    f"Kur atliekamos transformacijos (jei taikoma)?",
                     placeholder="Pateikite nuorodą (jei taikoma)",
                     key=f"link_{i}"
                 )
@@ -810,7 +813,10 @@ def ataskaitos_dokumentacija_page():
                 if st.session_state['data_sources_count'] > 1 and i > 0:
                     if st.button(f"Pašalinti šaltinį {i + 1}", key=f"delete_{i}"):
                         delete_data_source(i)
-
+                # Add a divider between each source except the last one
+                if i < st.session_state['data_sources_count'] - 1:
+                    st.markdown("---")
+                
                 if i == st.session_state['data_sources_count'] - 1:
                     if st.session_state.get(f'type_{i}') and st.session_state.get(f'details_{i}') and st.session_state.get(f'transformation_{i}') and st.session_state.get(f'link_{i}'):
                         if st.button("Pridėti naują duomenų šaltinį"):
@@ -895,11 +901,31 @@ styles = {
     },
 }
 
+
+def show_footer():
+    st.markdown("""
+    <style>
+    .footer {
+        text-align: center;
+        font-size: 12px;
+        color: gray;
+        padding: 10px;
+        margin-top: 50px;
+        border-top: 1px solid #f0f0f0;
+    }
+    </style>
+    <div class="footer">
+        © 2024 ESO.
+    </div>
+    """, unsafe_allow_html=True)
+    
+
+
 def main():
-    # Create a navbar with custom page names
+    # Create a longer navbar with additional padding, spacing, and custom styles
     page = option_menu(
         menu_title=None,  # Hide the menu title
-        options=["Pagrindinis", "TOP ataskaitos", "Dokumentacija"],  # Menu options
+        options=["Pagrindinis", "TOP ataskaitos", "Dokumentacija"],  # Added more options for longer bar
         icons=["house", "clipboard", "book"],  # Add custom icons (optional)
         menu_icon="cast",  # Optional menu icon
         default_index=0,  # Set the default selected index
@@ -908,18 +934,19 @@ def main():
             "container": {"padding": "0!important", "background-color": "#FF4B4B"},  # Primary Red background for the navbar
             "icon": {"color": "white", "font-size": "25px"},  # White icons with larger font size
             "nav-link": {
-                "font-size": "20px",
+                "font-size": "18px",  # Larger font size for navigation items
                 "text-align": "center",
-                "margin": "0px",
-                "padding": "10px",
+                "margin": "0px 10px",  # Add margin between items for a wider layout
+                "padding": "12px 20px",  # Add padding for a larger clickable area
                 "color": "white",
                 "background-color": "#FF4B4B",  # Primary Red background for unselected links
+                "border-radius": "5px",  # Add some rounding to the edges
             },
             "nav-link-selected": {"background-color": "#D32F2F"},  # Dark Red for the selected link
             "hover": {"background-color": "#FF6E6E"},  # Secondary Red on hover
         },
     )
-
+    
     # Display selected page content
     if page == "Pagrindinis":
         pagrindinis_page()
@@ -927,6 +954,7 @@ def main():
         top_ataskaitos_page()
     elif page == "Dokumentacija":
         ataskaitos_dokumentacija_page()
+    show_footer()
 
 if __name__ == "__main__":
     main()
