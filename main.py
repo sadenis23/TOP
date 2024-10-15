@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_tags import st_tags
 import pandas as pd
 from streamlit_navigation_bar import st_navbar
-import pyodbc
+from streamlit_option_menu import option_menu
 
 # Define function for each page
 def pagrindinis_page():
@@ -116,7 +116,7 @@ def top_ataskaitos_page():
         .sidebar-title {
             font-size: 32px !important;
             font-weight: bold;
-            color: #28a745 !important;  /* Force green color */
+            color: #FF4B4B !important;  /* Force green color */
             text-align: center;
             margin-bottom: 10px;
         }
@@ -140,7 +140,7 @@ def top_ataskaitos_page():
     def load_data_from_excel(file_path):
         return pd.read_excel(file_path, engine='openpyxl')
 
-    file_path = r"C:\DAS server data\TOP_forma\AtaskaituDuomenis.xlsx"  # Replace with your actual path
+    file_path = r"/Users/nedasvaitkus/Desktop/ISM/AI course/AtaskaituDuomenis.xlsx"  # Replace with your actual path
     df = load_data_from_excel(file_path)
 
     # Assuming the report titles are in a column named 'Pavadinimas'
@@ -313,7 +313,7 @@ def ataskaitos_dokumentacija_page():
         .sidebar-title {
             font-size: 32px !important;
             font-weight: bold;
-            color: #28a745 !important;  /* Force green color */
+            color: #FF4B4B !important;  /* Force green color */
             text-align: center;
             margin-bottom: 10px;
         }
@@ -493,7 +493,7 @@ def ataskaitos_dokumentacija_page():
         .sidebar-title {
             font-size: 32px !important;
             font-weight: bold;
-            color: #28a745 !important;  /* Force green color */
+            color: #FF4B4B !important;  /* Force green color */
             text-align: center;
             margin-bottom: 10px;
         }
@@ -610,7 +610,7 @@ def ataskaitos_dokumentacija_page():
         .sidebar-title {
             font-size: 32px !important;
             font-weight: bold;
-            color: #28a745 !important;  /* Force green color */
+            color: #FF4B4B !important;  /* Force green color */
             text-align: center;
             margin-bottom: 10px;
         }
@@ -885,7 +885,28 @@ styles = {
 
 def main():
     # Create a navbar with custom page names
-    page = st_navbar(["Pagrindinis", "TOP ataskaitos", "Dokumentacija"], styles=styles)
+    page = option_menu(
+        menu_title=None,  # Hide the menu title
+        options=["Pagrindinis", "TOP ataskaitos", "Dokumentacija"],  # Menu options
+        icons=["house", "clipboard", "book"],  # Add custom icons (optional)
+        menu_icon="cast",  # Optional menu icon
+        default_index=0,  # Set the default selected index
+        orientation="horizontal",  # Horizontal orientation
+        styles={
+            "container": {"padding": "0!important", "background-color": "#FF4B4B"},  # Primary Red background for the navbar
+            "icon": {"color": "white", "font-size": "25px"},  # White icons with larger font size
+            "nav-link": {
+                "font-size": "20px",
+                "text-align": "center",
+                "margin": "0px",
+                "padding": "10px",
+                "color": "white",
+                "background-color": "#FF4B4B",  # Primary Red background for unselected links
+            },
+            "nav-link-selected": {"background-color": "#D32F2F"},  # Dark Red for the selected link
+            "hover": {"background-color": "#FF6E6E"},  # Secondary Red on hover
+        },
+    )
 
     # Display selected page content
     if page == "Pagrindinis":
