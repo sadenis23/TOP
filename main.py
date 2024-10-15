@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit_tags import st_tags
 import pandas as pd
 from streamlit_navigation_bar import st_navbar
+import pyodbc
 
 # Define function for each page
 def pagrindinis_page():
@@ -39,18 +40,17 @@ def pagrindinis_page():
                 bet ir užtikrinti, jog svarbiausi duomenys niekada nebūtų prarasti ar nepasiekiami. Čia galite:
                 <ul>
                     <li><b>Identifikuoti prioritetines ataskaitas</b> - pasinaudodami TOP ataskaitos forma, galite nurodyti, kurios ataskaitos yra ypatingai svarbios Jūsų skyriui ar projektui.</li>
-                    <li><b>Dokumentuoti ataskaitas</b> - tai padės užtikrinti, kad kolegos visada turės aiškią informaciją apie tai, kas atsakingas už ataskaitas, koks jų tikslas, bei kokia jų svarba.</li>
+                    <li><b>Perduoti sukurtus įrankius</b> - sistema padės lengvai dokumentuoti ir perduoti svarbią informaciją apie sukurtą įrankį, užtikrinant, kad visi kolegos turėtų prieigą prie reikalingos informacijos ir galėtų efektyviai juo naudotis.</li>
                 </ul>
-                Naudodamiesi šia sistema, ne tik optimizuosite savo kasdienes užduotis, bet ir prisidėsite prie efektyvesnio duomenų valdymo organizacijoje. Pradėkite dabar ir užtikrinkite, kad Jūsų ataskaitos būtų tiksliai ir aiškiai dokumentuotos!
             </div>
         </div>
     """, unsafe_allow_html=True)
 
+
+# TOP ATASKAITOS ------------------------------------------------------------------------------------------------------------------------------------------
 def top_ataskaitos_page():
-    st.title("TOP Ataskaitų forma")
-    # Initialize session state for navigation
-    if 'page' not in st.session_state:
-        st.session_state.page = 'main'
+    # Set page layout and title
+    st.title("TOP Power BI ataskaitos forma")
 
     # Styling for buttons and sidebar
     st.markdown("""
@@ -110,25 +110,8 @@ def top_ataskaitos_page():
         </style>
     """, unsafe_allow_html=True)
 
-    # Custom CSS to style the button background to green
-    st.markdown("""
-        <style>
-        .stButton > button {
-            background-color: #343a40;  /* grey background */
-            color: white;  /* White text */
-            font-size: 22px;  /* Adjust font size */
-            border-radius: 8px;  /* Optional: Add rounded corners */
-            padding: 10px 20px;  /* Optional: Add padding */
-        }
-        .stButton > button:hover {
-            background-color: #23272b;  /* Darker green on hover */
-            color: white;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
-    st.sidebar.markdown(
-        """
+    # Sidebar content and styling
+    st.sidebar.markdown("""
         <style>
         .sidebar-title {
             font-size: 32px !important;
@@ -139,25 +122,19 @@ def top_ataskaitos_page():
         }
         </style>
         <div class='sidebar-title'>Naudingos nuorodos</div>
-        """,
-        unsafe_allow_html=True
-    )
-
+        """, unsafe_allow_html=True)
 
     with st.sidebar.expander("Kaip pildyti TOP ataskaitų formą?", expanded=False):
         st.markdown("""
             <div class="sidebar-content">
                 <ol style="font-size: 16px; color: #333;">
                     <li><b>Asmeninės informacijos pildymas</b>: Užpildykite visus asmeninės informacijos laukus.</li>
-                    <li><b>Pridėti naują ataskaitą</b>: Pradėkite paspausdami mygtuką <b>„Pridėti naują ataskaitą“</b>.</li>
                     <li><b>Ataskaitos pildymas</b>: Pasirinkite ataskaitos pavadinimą ir užpildykite visus laukus pažymėtus žvaigždute (*).</li>
-                    <li><b>Pridėti daugiau ataskaitų</b>: Norėdami pridėti daugiau, po pirmo užpildymo paspauskite <b>„Pridėti dar vieną ataskaitą“</b>.</li>
-                    <li><b>Pateikti ataskaitas</b>: Kai baigsite, paspauskite <b>„Baigti pildyti formą“</b>, kad pateiktumėte ataskaitų informaciją.</li>
+                    <li><b>Pateikti ataskaitą</b>: Kai baigsite, paspauskite <b>„Baigti pildyti formą“</b>, kad pateiktumėte ataskaitą.</li>
                 </ol>
             </div>
         """, unsafe_allow_html=True)
 
-    # Add the benefits section to the sidebar with expand functionality
     with st.sidebar.expander("Kodėl yra reikalinga turėti svarbiausių (TOP) Power BI ataskaitų sąrašą?", expanded=False):
         st.markdown("""
             <div style="background-color: #f0f4f7; padding: 20px; border-radius: 8px; border-left: 4px solid #007BFF;">
@@ -168,20 +145,6 @@ def top_ataskaitos_page():
                 </ol>
             </div>
         """, unsafe_allow_html=True)
-    st.sidebar.markdown(
-        """
-        <style>
-        .sidebar .bottom-image {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            padding: 20px;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-    st.sidebar.markdown("<div style='height: 50px !important;'></div>", unsafe_allow_html=True)  # Optional spacer to push the image to the bottom
 
     # Load report titles from Excel
     @st.cache_data
@@ -197,52 +160,15 @@ def top_ataskaitos_page():
     # Predefined categories for "Ataskaitos kategorija"
     predefined_categories = ["SMART'ai", "GV", "Finansai", "Dujos", "Neeilinė situacija", "Kita"]
 
-    # Initialize session state for storing multiple reports and user info
-    if 'reports' not in st.session_state:
-        st.session_state.reports = []
+    # Initialize session state for storing user info and report data
     if 'user_info' not in st.session_state:
         st.session_state.user_info = {
             "Vardas": "",
             "Pavarde": "",
             "El. Paštas": ""
         }
-    if 'is_form_submitted' not in st.session_state:
-        st.session_state.is_form_submitted = False
-
-    # Function to check if personal information is completely filled
-    def is_personal_info_filled():
-        return all(st.session_state.user_info.values())
-
-    # Function to display personal information input fields
-    def display_personal_info():
-        import streamlit as st
-
-    # Set page layout and title
-    #st.set_page_config(page_title="Power BI Dokumentacija", layout="centered")
-
-    # Load report titles from Excel
-    @st.cache_data
-    def load_data_from_excel(file_path):
-        return pd.read_excel(file_path, engine='openpyxl')
-
-    file_path = r"C:\DAS server data\TOP_forma\AtaskaituDuomenis.xlsx"  # Replace with your actual path
-    df = load_data_from_excel(file_path)
-
-    # Assuming the report titles are in a column named 'Pavadinimas'
-    report_titles = ["Pasirinkite..."] + df['Pavadinimas'].tolist()
-
-    # Predefined categories for "Ataskaitos kategorija"
-    predefined_categories = ["SMART'ai", "GV", "Finansai", "Dujos", "Neeilinė situacija", "Kita"]
-
-    # Initialize session state for storing multiple reports and user info
-    if 'reports' not in st.session_state:
-        st.session_state.reports = []
-    if 'user_info' not in st.session_state:
-        st.session_state.user_info = {
-            "Vardas": "",
-            "Pavarde": "",
-            "El. Paštas": ""
-        }
+    if 'report_data' not in st.session_state:
+        st.session_state.report_data = {}
     if 'is_form_submitted' not in st.session_state:
         st.session_state.is_form_submitted = False
 
@@ -275,97 +201,62 @@ def top_ataskaitos_page():
         else:
             st.session_state.user_info["El. Paštas"] = email  # Store the valid email
 
-    # Function to display report input fields with collapsible sections
-    def display_report_form(report_index):
+    # Function to display the report input form with collapsible sections (for a single report)
+    def display_report_form():
         disabled_state = not is_personal_info_filled()  # Disable fields if personal info is not filled
-        with st.expander(f"Ataskaita {report_index + 1}", expanded=True):
-            st.markdown(f"<h3 style='color: #2E8B57;'>Ataskaita {report_index + 1}</h3>", unsafe_allow_html=True)
 
-            # Add a delete button if it's not the first report
-            if report_index > 0:
-                if st.button(f"Pašalinti ataskaitą {report_index + 1}", key=f"delete_{report_index}", disabled=disabled_state):
-                    del st.session_state.reports[report_index]
-                    return None  # Return None to avoid rendering this report after deletion
+        with st.expander("Ataskaitos duomenys", expanded=True):
+            st.subheader("Ataskaitos informacija")
+            Pavadinimas = st.selectbox("Pasirinkite ataskaitos pavadinimą *", report_titles, key="pavadinimas", disabled=disabled_state)
 
-            # Report form input fields
-            Pavadinimas = st.selectbox("Pasirinkite ataskaitos pavadinimą *", report_titles, key=f"pavadinimas_{report_index}",
-                                    disabled=disabled_state)
+            Savininkas = st.text_input("Ataskaitos savininkas *", placeholder="Įveskite savininką", key="savininkas", disabled=disabled_state)
 
-            Savininkas = st.text_input("Ataskaitos savininkas *", placeholder="Įveskite savininką", key=f"savininkas_{report_index}", disabled=disabled_state)
+            Tema = st.text_area("Ataskaitos tema *", placeholder="Įveskite ataskaitos temą", key="tema", height=100, disabled=disabled_state)
 
-            Tema = st.text_area("Ataskaitos tema *", placeholder="Įveskite ataskaitos temą", key=f"tema_{report_index}", height=100, disabled=disabled_state)
-
-            # Predefined multiselect categories with an option to add custom ones
             Kategorija = st.multiselect(
                 "Kuriai kategorijai priskirtumėte ataskaitą? *", 
                 options=predefined_categories, 
                 default=None, 
                 help="Pasirinkite vieną ar daugiau kategorijų. Jei pasirinksite 'Kita', turėsite įvesti papildomą kategoriją.",
-                key=f"kategorija_{report_index}",
+                key="kategorija",
                 disabled=disabled_state
             )
 
-            # If "Kita" is selected, show a st_tags input field for additional categories
-            custom_categories = []
             if "Kita" in Kategorija:
-                custom_categories = st_tags(
-                    label="Įveskite papildomą kategoriją (-as):",
-                    text="Įrašykite naują kategoriją ir paspauskite Enter",
-                    value=[],
-                    key=f"custom_category_{report_index}"
-                )
-                # Append custom categories to selected categories
+                # Input field for entering additional categories separated by commas
+                custom_categories_input = st.text_input("Įveskite papildomą kategoriją (-as):", 
+                                                        placeholder="Atskirkite kategorijas kableliais", 
+                                                        key="custom_category_input",
+                                                        disabled=disabled_state)
+                # Split the input into a list of categories by commas
+                custom_categories = [cat.strip() for cat in custom_categories_input.split(',') if cat.strip()]
                 Kategorija.extend(custom_categories)
 
-            st.markdown("---")
             st.subheader("Skyrių informacija")
-            col3, col4 = st.columns(2)
+            Skyrius = st.text_input("Skyrius *", placeholder="Skyrius, kuriam buvo kurta ataskaita", key="skyrius", disabled=disabled_state)
 
-            with col3:
-                Skyrius = st.text_input("Kuriam skyriui buvo kuriama ataskaita? *", placeholder="Skyrius, kuriam buvo kurta ataskaita", key=f"skyrius_{report_index}", disabled=disabled_state)
+            Skyriai = st.text_input("Kiti skyriai *", placeholder="Skyriai, kurie naudojasi ataskaita", key="skyriai", disabled=disabled_state)
 
-            with col4:
-                Skyriai = st.text_input("Įvardinkite skyrius, kurie taip pat naudojasi ataskaita? *", placeholder="Skyriai, kurie naudojasi ataskaita", key=f"skyriai_{report_index}", disabled=disabled_state)
-
-            st.markdown("---")
-            st.subheader("Naudojimas")
-
+            st.subheader("Naudojimo informacija")
             NaudojimoDaznumas = st.selectbox("Kiek dažnai ataskaita yra naudojama? *", 
-                                    ['Pasirinkite...', 
-                                    'Naudojama tik išimtiniais atvejais', 
-                                    'Mažiau nei 1 kartą per savaitę', 
-                                    '2-5 kartai per savaitę', 
-                                    '6-10 kartai per savaitę',
-                                    '11-20 kartai per savaitę', 
-                                    'Daugiau nei 20 kartų per savaitę',
-                                    'Sunku pasakyti, priklauso nuo daugelio veiksnių'],
-                                    key=f"naudojimo_daznumas_{report_index}", disabled=disabled_state)
+                                        ['Pasirinkite...', 'Naudojama tik išimtiniais atvejais', 'Labai retai', 'Kartais', 'Dažnai', 'Labai dažnai', 'Nuolat'],
+                                        key="naudojimo_daznumas", disabled=disabled_state)
 
-            # Place the radio buttons in two columns
-            col5, col6 = st.columns(2)
+            EsoBLNaudojimas = st.radio("Ar naudojama ESO BL rodiklių lentoje? *", 
+                                    ['Pasirinkite...', 'Taip', 'Ne', 'Nežinau'], key="eso_bl", disabled=disabled_state)
 
-            with col5:
-                EsoBLNaudojimas = st.radio("Ar naudojama ESO BL rodiklių lentoje? *", 
-                                            ['Pasirinkite...', 'Taip', 'Ne', 'Nežinau'],
-                                            key=f"eso_bl_{report_index}", disabled=disabled_state)
+            Isore = st.radio("Ar išeina į išorę? *", ['Pasirinkite...', 'Taip', 'Ne', 'Nežinau'], key="isore", disabled=disabled_state)
 
-            with col6:
-                Isore = st.radio("Ar išeina į išorę? *", 
-                                ['Pasirinkite...', 'Taip', 'Ne', 'Nežinau'],
-                                key=f"isore_{report_index}", disabled=disabled_state)
-
-            st.markdown("---")
-            st.subheader("Svarbūs komentarai & pastabos apie ataskaitos svarbumą ir unikalumą")
-
+            st.subheader("Komentarai ir pastabos")
             KomentaraiPastabos = st.text_area("Komentarai / Pastabos *", 
                                             placeholder="Įveskite kitus komentarus arba pastabas apie ataskaitą", 
-                                            height=150, key=f"komentarai_{report_index}", disabled=disabled_state)
-        
-            return {
+                                            height=150, key="komentarai", disabled=disabled_state)
+
+            st.session_state.report_data = {
                 "Pavadinimas": Pavadinimas,
                 "Savininkas": Savininkas,
                 "Tema": Tema,
-                "Kategorijos": Kategorija,  # Use selected and custom categories
+                "Kategorijos": Kategorija,
                 "Skyrius": Skyrius,
                 "Kiti skyriai": Skyriai,
                 "Naudojimo dažnumas": NaudojimoDaznumas,
@@ -374,51 +265,30 @@ def top_ataskaitos_page():
                 "Komentarai/Pastabos": KomentaraiPastabos
             }
 
-    # Function to check for missing fields in all reports
+    # Function to check for missing fields
     def check_for_missing_fields():
         missing_fields = []
-        for i, report in enumerate(st.session_state.reports):
-            fields = []
-            for key, value in report.items():
-                if key == "Papildyta kategorija" and "Kita" not in report["Kategorija"]:
-                    continue  # Skip the "Papildyta kategorija" check if "Kita" is not selected
-                if not value or (isinstance(value, str) and value == 'Pasirinkite...'):
-                    fields.append(key)
-            if fields:
-                missing_fields.append((i + 1, fields))
+        for key, value in st.session_state.report_data.items():
+            if not value or (isinstance(value, str) and value == 'Pasirinkite...'):
+                missing_fields.append(key)
         return missing_fields
 
-    # Show personal info section and allow report input
+    # Main page logic
     display_personal_info()
+    display_report_form()
 
-    # Display existing reports and allow editing only if personal info is filled
-    for i in range(len(st.session_state.reports)):
-        report_data = display_report_form(i)
-        if report_data:
-            st.session_state.reports[i] = report_data
-
-    # Display "Pridėti naują ataskaitą" button that matches the "Baigti pildyti formą" button size
+    # Show button to submit the form only if personal info is filled
     if is_personal_info_filled():
-        if st.button("Pridėti naują ataskaitą"):
-            st.session_state.reports.append(display_report_form(len(st.session_state.reports)))
-    else:
-        st.button("Pridėti naują ataskaitą", disabled=True)
-
-    # Show button to submit the form only if personal info is filled and there is at least one report
-    if is_personal_info_filled() and st.session_state.reports:
         st.markdown("---")
-        
-        # Center the "Baigti pildyti formą" button and make it green
         st.markdown('<div class="submit-button">', unsafe_allow_html=True)
         if st.button("Baigti pildyti formą ir siųsti duomenis"):
             missing_fields = check_for_missing_fields()
             if missing_fields:
-                st.warning("Nepavyko pateikti duomenų, nes kai kurių ataskaitų laukų trūksta:")
-                for report_index, fields in missing_fields:
-                    st.warning(f"Ataskaita {report_index}: trūksta laukų: {', '.join(fields)}")
+                missing_fields_str = ', '.join(missing_fields)
+                st.info(f"Neužpildyti šie laukai: {missing_fields_str}")
             else:
                 st.session_state.is_form_submitted = True
-                st.success("Ataskaitos sėkmingai pateiktos!")
+                st.success("Ataskaita sėkmingai pateikta!")
 
                 # Display submitted information
                 st.markdown("## Jūsų pateikta informacija:")
@@ -426,19 +296,17 @@ def top_ataskaitos_page():
                 st.write(f"**Vardas:** {st.session_state.user_info['Vardas']}")
                 st.write(f"**Pavardė:** {st.session_state.user_info['Pavarde']}")
                 st.write(f"**El. Paštas:** {st.session_state.user_info['El. Paštas']}")
-                
-                st.markdown("## Ataskaitos:")
-                for i, report in enumerate(st.session_state.reports):
-                    st.write(f"### Ataskaita {i + 1}")
-                    for key, value in report.items():
-                        st.write(f"**{key}:** {value}")
+
+                st.markdown("## Ataskaita:")
+                for key, value in st.session_state.report_data.items():
+                    st.write(f"**{key}:** {value}")
         st.markdown('</div>', unsafe_allow_html=True)
 
+# IRANKIO DOKUMENTACIJA--------------------------------------------------------------------------
 
-#--------------------------------------------------------------------------
 def ataskaitos_dokumentacija_page():
     # Set page layout and title
-    st.title("Įrankio dokumentacija")
+    st.title("Įrankio perdavimas")
 
     # Custom CSS to center buttons
     st.markdown("""
@@ -498,6 +366,57 @@ def ataskaitos_dokumentacija_page():
 
         return missing_fields
 
+    def check_for_missing_fields_section2():
+        missing_fields = []
+        # Assuming there are data fields like type_0, details_0, etc.
+        if not st.session_state.get('type_0'):
+            missing_fields.append("Tipas 1")
+        if not st.session_state.get('details_0'):
+            missing_fields.append("Detalės 1")
+        
+        # Check for additional data sources if added (dynamic indexing)
+        for i in range(1, st.session_state['data_sources_count']):
+            if not st.session_state.get(f'type_{i}'):
+                missing_fields.append(f"Tipas {i + 1}")
+            if not st.session_state.get(f'details_{i}'):
+                missing_fields.append(f"Detalės {i + 1}")
+        
+        return missing_fields
+
+    def check_for_missing_fields_section3():
+        missing_fields = []
+        # Assuming there are steps for transformations
+        for i in range(st.session_state['transformations_count']):
+            if not st.session_state.get(f'steps_{i}'):
+                missing_fields.append(f"Transformacija {i + 1}")
+        
+        return missing_fields
+
+    def check_for_missing_fields_section4():
+        missing_fields = []
+        if not st.session_state.get('frequency'):
+            missing_fields.append("Atnaujinimų dažnumas")
+        if not st.session_state.get('update_time'):
+            missing_fields.append("Naujinimosi laikas")
+        
+        return missing_fields
+
+    def check_for_missing_fields_section5():
+        missing_fields = []
+        if not st.session_state.get('orchestrator'):
+            missing_fields.append("Kodo orchestratorius")
+        if not st.session_state.get('gitlab'):
+            missing_fields.append("GitLab integracija")
+        if not st.session_state.get('data_gateway'):
+            missing_fields.append("Data Gateway")
+        if not st.session_state.get('rls'):
+            missing_fields.append("Duomenų saugos sistema (RLS)")
+        if not st.session_state.get('selected_processes'):
+            missing_fields.append("Procesai")
+        
+        return missing_fields
+
+
     # Section 1: Įrankio dokumentacija (Step 1)
     if st.session_state['current_step'] >= 1:
         with st.expander("Pagrindinė ataskaitos informacija", expanded=True):
@@ -514,13 +433,19 @@ def ataskaitos_dokumentacija_page():
             st.session_state['purpose'] = st.text_area("Paskirtis", placeholder="Apibrėžkite ataskaitos paskirtį ir jos naudą")
             st.session_state['topics'] = st.multiselect("Ataskaitos tematika", options=["Finansai", "IT", "GV", "SMART"])
 
-            tags = st_tags(
-                label="Jei nėra, pridėkite savo temų kategorijas:",
-                text="Pridėkite temas",
-                value=[],
-                suggestions=["Finansai", "IT", "Analitika"],
+           # Simple text area for adding themes (temos kategorijas)
+            tags = st.text_area(
+                label="Pridėkite savo temų kategorijas:",
+                placeholder="Įrašykite temas atskirtas kableliais, pvz., Finansai, IT, Analitika",
+                height=10
             )
-            st.write("**Pateiktos temos:**", ", ".join(tags))
+
+            # Display the entered themes
+            if tags:
+                # Split the input string by commas and display as a list
+                temas_list = [tema.strip() for tema in tags.split(',')]
+                st.write("**Pateiktos temos:**", ", ".join(temas_list))
+
 
             # Show the Continue button only for the current step
             if st.session_state['current_step'] == 1:
@@ -735,14 +660,14 @@ styles = {
 
 def main():
     # Create a navbar with custom page names
-    page = st_navbar(["Pagrindinis", "TOP ataskaitos", "Ataskaitos dokumentacija"], styles=styles)
+    page = st_navbar(["Pagrindinis", "TOP ataskaitos", "Įrankio perdavimas"], styles=styles)
 
     # Display selected page content
     if page == "Pagrindinis":
         pagrindinis_page()
     elif page == "TOP ataskaitos":
         top_ataskaitos_page()
-    elif page == "Ataskaitos dokumentacija":
+    elif page == "Įrankio perdavimas":
         ataskaitos_dokumentacija_page()
 
 if __name__ == "__main__":
