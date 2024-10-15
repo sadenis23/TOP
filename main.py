@@ -7,6 +7,18 @@ from streamlit_option_menu import option_menu
 # Define function for each page
 def pagrindinis_page():
     st.title("Sveiki atvykę į ESO ataskaitų dokumentacijos puslapį!")
+    st.sidebar.markdown("""
+    <style>
+    .sidebar-title {
+        font-size: 32px !important;
+        font-weight: bold;
+        color: #FF4B4B !important;  /* Force green color */
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    </style>
+    <div class='sidebar-title'>Naudingos nuorodos</div>
+""", unsafe_allow_html=True)
 
     # Adding custom CSS for card-like styling
     st.markdown("""
@@ -51,6 +63,7 @@ def pagrindinis_page():
 def top_ataskaitos_page():
     # Set page layout and title
     st.title("TOP Power BI ataskaitos forma")
+
 
     # Styling for buttons and sidebar
     st.markdown("""
@@ -586,9 +599,8 @@ def ataskaitos_dokumentacija_page():
         
         return missing_fields
 
-    # IRANKIO DOKUMENTACIJA--------------------------------------------------------------------------
+# IRANKIO DOKUMENTACIJA--------------------------------------------------------------------------
 
-# IRANKIO DOKUMENTACIJA --------------------------------------------------------------------------
 
 def ataskaitos_dokumentacija_page():
     # Set page layout and title
