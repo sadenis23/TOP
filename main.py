@@ -702,7 +702,16 @@ def ataskaitos_dokumentacija_page():
             with col2:
                 st.session_state['clients'] = st.text_input("Projekto užsakovai / Atsakingi asmenys", placeholder="Nurodykite projekto užsakovus")
 
-            st.session_state['tool_type'] = st.multiselect("Įrankio tipas", options=["Power BI", "Python", "Power Apps", "Excel", "Kita"])
+            st.session_state['tool_type'] = st.multiselect("Įrankio tipas", options=["Power BI", "Python", "Power Apps", "Excel", "Power Automate", "Kita"])
+            # Check if "Kita" is selected
+            if "Kita" in st.session_state['tool_type']:
+                # Display text input for custom tool type if "Kita" is selected
+                custom_tool_type = st.text_input("Įrašykite savo įrankio tipą", placeholder="Įrašykite kitą įrankio tipą")
+
+                # Store the custom tool type in session state if provided
+                if custom_tool_type:
+                    st.session_state['tool_type'].append(custom_tool_type)
+                    
             st.session_state['purpose'] = st.text_area("Paskirtis", placeholder="Apibrėžkite ataskaitos paskirtį ir jos naudą")
             process_options = [
                 "L3 PROCESŲ GRUPĖ. ELEKTROS SKIRSTOMŲJŲ TINKLŲ VYSTYMAS",
@@ -714,13 +723,12 @@ def ataskaitos_dokumentacija_page():
                 options=process_options,
                 placeholder="Nurodykite, prie kokio proceso ar verslo srities priskirta ataskaita"
             )
-            st.session_state['topics'] = st.multiselect("Ataskaitos tematika", options=["Finansai", "IT", "GV", "SMART"])
+            st.session_state['topics'] = st.multiselect("Įrankio tematika", options=["Finansai", "IT", "GV", "SMART", "TBD"])
 
             # Simple text area for adding themes (temos kategorijas)
-            tags = st.text_area(
+            tags = st.text_input(
                 label="Pridėkite savo temų kategorijas:",
-                placeholder="Įrašykite temas atskirtas kableliais, pvz., Finansai, IT, Analitika",
-                height=10
+                placeholder="Įrašykite temas atskirtas kableliais, pvz., Finansai, IT, Analitika"
             )
 
             # Display the entered themes
@@ -775,14 +783,14 @@ def ataskaitos_dokumentacija_page():
                         key=f"details_{i}"
                     )
 
-                st.text_input(
+                st.text_area(
                     f"Transformacija {i + 1}",
                     placeholder="Įrašykite transformaciją (jei taikoma)",
                     key=f"transformation_{i}"
                 )
 
                 st.text_input(
-                    f"Nuoroda {i + 1}",
+                    f"Atliekamos transformacijos nuoroda (jei taikoma) {i + 1}",
                     placeholder="Pateikite nuorodą (jei taikoma)",
                     key=f"link_{i}"
                 )
