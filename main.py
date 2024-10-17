@@ -14,7 +14,7 @@ def pagrindinis_page():
     .sidebar-title {
         font-size: 32px !important;
         font-weight: bold;
-        color: #FF4B4B !important;  /* Force green color */
+        color: #000000 !important;  /* Force green color */
         text-align: center;
         margin-bottom: 10px;
     }
@@ -131,7 +131,7 @@ def top_ataskaitos_page():
         .sidebar-title {
             font-size: 32px !important;
             font-weight: bold;
-            color: #FF4B4B !important;  /* Force green color */
+            color: #000000!important;  /* Force green color */
             text-align: center;
             margin-bottom: 10px;
         }
@@ -141,7 +141,7 @@ def top_ataskaitos_page():
 
     with st.sidebar.expander("Kodėl yra reikalinga turėti svarbiausių (TOP) Power BI ataskaitų sąrašą?", expanded=False):
         st.markdown("""
-            <div style="background-color: #f0f4f7; padding: 20px; border-radius: 8px; border-left: 4px solid #007BFF;">
+            <div style="background-color: #f0f4f7; padding: 20px; border-radius: 8px; border-left: 4px solid #32CD32;">
                 <ol style="font-size: 16px; color: #333;">
                     <li><b>Suteikti aukštesnį prioritetą</b>, ypač kai jos neatsinaujina laiku.</li>
                     <li><b>DWH galės sparčiau atnaujinti</b> lentas šioms ataskaitoms.</li>
@@ -155,7 +155,7 @@ def top_ataskaitos_page():
     def load_data_from_excel(file_path):
         return pd.read_excel(file_path, engine='openpyxl')
 
-    file_path = r"C:\DAS server data\TOP_forma\AtaskaituDuomenis.xlsx"  # Replace with your actual path
+    file_path = r"/Users/nedasvaitkus/Desktop/ISM/AI course/AtaskaituDuomenis.xlsx"  # Replace with your actual path
     df = load_data_from_excel(file_path)
 
     # Assuming the report titles are in a column named 'Pavadinimas'
@@ -327,7 +327,7 @@ def ataskaitos_dokumentacija_page():
         .sidebar-title {
             font-size: 32px !important;
             font-weight: bold;
-            color: #FF4B4B !important;  /* Force green color */
+            color: #000000 !important;  /* Force green color */
             text-align: center;
             margin-bottom: 10px;
         }
@@ -443,7 +443,7 @@ def ataskaitos_dokumentacija_page():
         .sidebar-title {
             font-size: 32px !important;
             font-weight: bold;
-            color: #FF4B4B !important;  /* Force green color */
+            color: #000000 !important;  /* Force green color */
             text-align: center;
             margin-bottom: 10px;
         }
@@ -485,6 +485,8 @@ def ataskaitos_dokumentacija_page():
             missing_fields.append("Įrankio pavadinimas")
         if not st.session_state.get('tool_name'):
             missing_fields.append("Įrankio nuoroda")
+        if not st.session_state.get('workspace'):
+            missing_fields.append("Įrankio workspace")
         if not st.session_state.get('executor'):
             missing_fields.append("Projekto vykdytojas")
         if not st.session_state.get('clients'):
@@ -526,6 +528,10 @@ def ataskaitos_dokumentacija_page():
             missing_fields.append("Data Gateway")
         if not st.session_state.get('rls'):
             missing_fields.append("Duomenų saugos sistema (RLS)")
+        if not st.session_state.get('external'):
+            missing_fields.append("Ar išeina į išorę?")
+        if not st.session_state.get('fabric'):
+            missing_fields.append("Microsoft Fabric elementai")
 
         return missing_fields
 
@@ -554,6 +560,8 @@ def ataskaitos_dokumentacija_page():
         with st.expander("1. Pagrindinė įrankio informacija", expanded=True):
             st.session_state['report_name'] = st.text_input("Įrankio pavadinimas", placeholder="Įrašykite įrankio pavadinimą")
             st.session_state['tool_name'] = st.text_input("Įrankio nuoroda", placeholder="Įklijuokite įrankio nuorodą")
+            st.session_state['workspace'] = st.text_input("Įrankio workspace nuoroda (jei taikoma)",
+                                                          placeholder="Įklijuokite įrankio workspace nuorodą")
 
             col1, col2 = st.columns(2)
             with col1:
@@ -652,11 +660,29 @@ def ataskaitos_dokumentacija_page():
             with col1:
                 st.session_state['orchestrator'] = st.radio("Ar naudojamas kodo orchestratorius?", options=["Taip", "Ne"], index=1, horizontal=False)
                 st.session_state['gitlab'] = st.radio("Ar yra GitLab integracija?", options=["Taip", "Ne"], index=1, horizontal=False)
+                st.session_state['external'] = st.radio("Ar įrankis išeina į išorę?", options=["Taip", "Ne"], index=1, horizontal=False)
 
             with col2:
                 st.session_state['data_gateway'] = st.radio("Ar naudojamas Data Gateway?", options=["Taip", "Ne"], index=1, horizontal=False)
                 st.session_state['rls'] = st.radio("Ar yra įdiegta duomenų saugos sistema (RLS)?", options=["Taip", "Ne"], index=1, horizontal=False)
-
+            
+            st.session_state['fabric'] = st.multiselect("Microsoft naudojami elementai", 
+                options=[
+                    "Data Factory", 
+                    "Data Lake", 
+                    "Lakehouse", 
+                    "Data Warehouse", 
+                    "Notebooks", 
+                    "Spark Jobs", 
+                    "Power BI", 
+                    "Pipelines", 
+                    "Real-time Analytics", 
+                    "Synapse Data Explorer", 
+                    "Dataflow Gen2", 
+                    "Kusto Query Language (KQL)"
+                ]
+            )
+            
             if st.session_state['current_step'] == 3:
                 missing_fields = check_for_missing_fields_section3()
                 st.markdown('<div class="center-button">', unsafe_allow_html=True)
