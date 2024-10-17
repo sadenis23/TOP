@@ -514,6 +514,10 @@ def ataskaitos_dokumentacija_page():
                 missing_fields.append(f"Transformacija {i + 1}")
             if not st.session_state.get(f'link_{i}'):
                 missing_fields.append(f"Nuoroda {i + 1}")
+            if not st.session_state.get(f'maintransformation_{i}'):
+                missing_fields.append(f"Pagrindinė transformacija {i + 1}")
+            if not st.session_state.get(f'important{i}'):
+                missing_fields.append(f"Pastabos / Svarbu žinoti {i + 1}")    
 
         return missing_fields
 
@@ -580,7 +584,7 @@ def ataskaitos_dokumentacija_page():
             st.session_state['selected_processes'] = st.multiselect("Kokiems procesams priklauso įrankis?", options=process_options, placeholder="Nurodykite procesą")
             st.session_state['topics'] = st.multiselect("Tematika", options=["Finansai", "IT", "GV", "SMART", "TBD"])
 
-            tags = st.text_input("Pridėkite savo temų kategorijas", placeholder="Įrašykite temas atskirtas kableliais")
+            tags = st.text_input("Jei galite priskirti daugiau įrankio tematikų, prašome jas įrašyti:", placeholder="Įrašykite temas atskirtas kableliais")
             if tags:
                 temas_list = [tema.strip() for tema in tags.split(',')]
                 st.write("**Pateiktos temos:**", ", ".join(temas_list))
@@ -621,10 +625,14 @@ def ataskaitos_dokumentacija_page():
                 with col1:
                     st.selectbox(f"Tipas", options=["DWH", "Sharepoint", "Excel", "API", "Kita"], key=f"type_{i}")
                 with col2:
-                    st.text_input(f"Serveris/Duomenų bazė/Schema/Lenta", placeholder="Įrašykite detales apie šaltinį", key=f"details_{i}")
+                    st.text_input(f"Serveris/Duomenų bazė/Schema/Lenta/Pavadinimas", placeholder="Pateikite detales apie šaltinį", key=f"details_{i}")
 
-                st.text_area(f"Transformacija", placeholder="Įrašykite transformaciją (jei taikoma)", key=f"transformation_{i}")
-                st.text_input(f"Kur atliekamos transformacijos (jei taikoma)?", placeholder="Pateikite nuorodą (jei taikoma)", key=f"link_{i}")
+                st.text_area(f"Pagrindinė transformacija (jei taikoma)", placeholder="Įrašykite pagrindinę transformaciją", key=f"transformation_{i}")
+                st.text_input(f"Kur atliekama pagrindinė transformacija (jei taikoma)?", placeholder="Pateikite nuorodą", key=f"link_{i}")
+                st.markdown("---")
+                st.text_area(f"Pateikite kitas atliekamas transformacijas (jei taikoma)", placeholder="Pateikite kitas atliekamas transformacijas", key=f"maintransformation_{i}")
+                st.text_input(f"Pastabos / Svarbu žinoti", placeholder="Įrašykite svarbias pastabos ", key=f"important{i}")
+                
 
                 if st.session_state['data_sources_count'] > 1 and i > 0:
                     if st.button(f"Pašalinti šaltinį {i + 1}", key=f"delete_{i}"):
@@ -696,9 +704,9 @@ def ataskaitos_dokumentacija_page():
 
     # Section 4: Komentarai / Pastabos (Step 4)
     if st.session_state['current_step'] >= 4:
-        with st.expander("4. Komentarai / Pastabos", expanded=False):
-            st.subheader("Komentarai / Pastabos")
-            st.session_state['comments'] = st.text_area("Komentarai / Pastabos", placeholder="Pateikite papildomus komentarus arba pastabas")
+        with st.expander("4. Papildoma informacija", expanded=False):
+            st.subheader("Papildoma informacija")
+            st.session_state['comments'] = st.text_area("Pateikite pagrindinius įrankio iššūkius ar komentarus", placeholder="Pateikite papildomus komentarus arba pastabas")
 
             if st.session_state['current_step'] == 4:
                 st.markdown('<div class="center-button">', unsafe_allow_html=True)
