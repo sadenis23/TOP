@@ -3,7 +3,6 @@ from streamlit_tags import st_tags
 import pandas as pd
 from streamlit_navigation_bar import st_navbar
 from streamlit_option_menu import option_menu
-import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="📚 ESO Dokumentacija", layout="centered")
 
@@ -156,7 +155,7 @@ def top_ataskaitos_page():
     def load_data_from_excel(file_path):
         return pd.read_excel(file_path, engine='openpyxl')
 
-    file_path = r"/Users/nedasvaitkus/Desktop/ISM/AI course/AtaskaituDuomenis.xlsx"  # Replace with your actual path
+    file_path = r"C:\DAS server data\TOP_forma\AtaskaituDuomenis.xlsx"  # Replace with your actual path
     df = load_data_from_excel(file_path)
 
     # Assuming the report titles are in a column named 'Pavadinimas'
