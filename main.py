@@ -306,123 +306,7 @@ def top_ataskaitos_page():
                     st.write(f"**{key}:** {value}")
         st.markdown('</div>', unsafe_allow_html=True)
         
- # IRANKIO DOKUMENTACIJA--------------------------------------------------------------------------
-def ataskaitos_dokumentacija_page():
-    # Set page layout and title
-    st.title("Įrankio dokumentacija")
-
-    # Custom CSS to center buttons
-    st.markdown("""
-        <style>
-        .center-button {
-            display: flex;
-            justify-content: center;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
-    # Sidebar content and styling
-    st.sidebar.markdown("""
-        <style>
-        .sidebar-title {
-            font-size: 32px !important;
-            font-weight: bold;
-            color: #000000 !important;  /* Force green color */
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        </style>
-        <div class='sidebar-title'>Naudingos nuorodos</div>
-    """, unsafe_allow_html=True)
-    
-    with st.sidebar.expander("Perdavimo instrukcijos", expanded=False):
-        st.markdown("""
-        <div style="background-color: #f0f4f7; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745;">
-            <ol style="font-size: 16px; color: #333;">
-                <li><b>Surinkite visą reikiamą informaciją</b>, įskaitant ataskaitos pavadinimą, projekto vykdytoją, užsakovus, savininką, ir pagrindinį ataskaitos tikslą.</li>
-                <li><b>Nurodykite duomenų šaltinius</b> ir pateikite išsamią informaciją apie jų tipus, pvz.: DWH, SharePoint, Excel, ar API. Jei yra daugiau nei vienas šaltinis, pridėkite juos.</li>
-                <li><b>Aptarkite atliktas transformacijas</b> – nurodykite, kokios transformacijos buvo atliekamos su duomenimis (pvz., valymo veiksmai, duomenų transformavimas).</li>
-                <li><b>Pateikite atnaujinimo dažnumą</b> – nustatykite, kaip dažnai atnaujinami duomenys (pvz.: kasdien, kas savaitę) ir kada vyksta atnaujinimai.</li>
-                <li><b>Įrašykite įrankio konfiguraciją</b>, įskaitant kodo orchestratorių, GitLab integraciją, Data Gateway naudojimą, bei RLS (saugos sistemos) taikymą.</li>
-                <li><b>Papildomi komentarai ir pastabos</b> – pateikite bet kokią papildomą informaciją ar rekomendacijas ateičiai.</li>
-            </ol>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # Adjust session state initialization for section tracking
-    if 'current_step' not in st.session_state:
-        st.session_state['current_step'] = 1
-
-    # Adjust section tracking state for 4 sections only
-    if 'section_completed' not in st.session_state:
-        st.session_state['section_completed'] = {
-            'section1': False,
-            'section2': False,
-            'section5': False,
-            'section6': False
-        }
-
-    if 'attempted_section' not in st.session_state:
-        st.session_state['attempted_section'] = {
-            'section1': False,
-            'section2': False,
-            'section5': False,
-            'section6': False
-        }
-
-    def next_section(section_key):
-        st.session_state['section_completed'][section_key] = True
-        st.session_state['current_step'] += 1
-        st.success(f"Automatiškai išsaugota! Galite tęsti toliau.")
-
-    def check_for_missing_fields_section1():
-        missing_fields = []
-        if not st.session_state.get('report_name'):
-            missing_fields.append("Ataskaitos pavadinimas")
-        if not st.session_state.get('executor'):
-            missing_fields.append("Projekto vykdytojas")
-        if not st.session_state.get('clients'):
-            missing_fields.append("Projekto užsakovai")
-        if not st.session_state.get('tool_type'):
-            missing_fields.append("Įrankio tipas")
-        if not st.session_state.get('purpose'):
-            missing_fields.append("Paskirtis")
-        if not st.session_state.get('topics'):
-            missing_fields.append("Ataskaitos tematika")
-
-        return missing_fields
-
-    def check_for_missing_fields_section2():
-        missing_fields = []
-        # Assuming there are data fields like type_0, details_0, etc.
-        for i in range(st.session_state['data_sources_count']):
-            if not st.session_state.get(f'type_{i}'):
-                missing_fields.append(f"Tipas {i + 1}")
-            if not st.session_state.get(f'details_{i}'):
-                missing_fields.append(f"Detalės {i + 1}")
-            if not st.session_state.get(f'transformation_{i}'):
-                missing_fields.append(f"Transformacija {i + 1}")
-        
-        return missing_fields
-
-    def check_for_missing_fields_section5():
-        missing_fields = []
-        if not st.session_state.get('orchestrator'):
-            missing_fields.append("Kodo orchestratorius")
-        if not st.session_state.get('gitlab'):
-            missing_fields.append("GitLab integracija")
-        if not st.session_state.get('data_gateway'):
-            missing_fields.append("Data Gateway")
-        if not st.session_state.get('rls'):
-            missing_fields.append("Duomenų saugos sistema (RLS)")
-        if not st.session_state.get('selected_processes'):
-            missing_fields.append("Procesai")
-        
-        return missing_fields
-
 # IRANKIO DOKUMENTACIJA--------------------------------------------------------------------------
-
-
 def ataskaitos_dokumentacija_page():
     # Set page layout and title
     st.title("Įrankio dokumentacija")
@@ -451,6 +335,7 @@ def ataskaitos_dokumentacija_page():
         <div class='sidebar-title'>Naudingos nuorodos</div>
     """, unsafe_allow_html=True)
 
+
     # Adjust session state initialization for section tracking
     if 'current_step' not in st.session_state:
         st.session_state['current_step'] = 1
@@ -463,14 +348,35 @@ def ataskaitos_dokumentacija_page():
             'section3': False,
             'section4': False
         }
+    if 'form_submitted' not in st.session_state:
+        st.session_state['form_submitted'] = False  # Track if form has been submitted
+        
+    # Weights for each section
+    section_weights = {
+        'section1': 30,  # 30% for section 1
+        'section2': 50,  # 50% for section 2
+        'section3': 10,  # 10% for section 3
+        'section4': 10   # 10% for section 4
+    }
+    # Add a large gap to push the quote to the bottom
+    st.sidebar.markdown("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>",
+                        unsafe_allow_html=True)
+    # Automate the progress bar based on completed sections and weights
+    sections = ['section1', 'section2', 'section3', 'section4']
+    progress = sum([section_weights[section] for section in sections if st.session_state['section_completed'][section]])
 
-    if 'attempted_section' not in st.session_state:
-        st.session_state['attempted_section'] = {
-            'section1': False,
-            'section2': False,
-            'section3': False,
-            'section4': False
-        }
+    # Update progress calculation
+    if st.session_state['form_submitted']:
+        progress = 100  # Show 100% when the form is submitted
+
+    # Display the progress bar in the sidebar
+    st.sidebar.progress(progress / 100)
+
+    # Show success message if all sections are completed
+    if progress == 100:
+        st.sidebar.success("Sveikinu sėkmingai užpildžius įrankio dokumentaciją!")
+    else:
+        st.sidebar.info(f"Progresas: {int(progress)}%")
 
         # Function to proceed to the next section
     def next_section(section_key):
