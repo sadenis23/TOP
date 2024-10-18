@@ -55,6 +55,7 @@ def pagrindinis_page():
                 <ul>
                     <li><b>Identifikuoti prioritetines ataskaitas</b> - pasinaudodami TOP ataskaitos forma, galite nurodyti, kurios ataskaitos yra ypatingai svarbios Jūsų skyriui ar projektui.</li>
                     <li><b>Perduoti sukurtus įrankius</b> - sistema padės lengvai dokumentuoti ir perduoti svarbią informaciją apie sukurtą įrankį, užtikrinant, kad visi kolegos turėtų prieigą prie reikalingos informacijos ir galėtų efektyviai juo naudotis.</li>
+                    <li><b>Ataskaitų tvarkymas ir dokumentacija</b> - Kiekvieną ataskaitą ar įrankį dokumentuokite aiškiai, nurodydami, kas ją sukūrė, kokie duomenys naudojami ir kokiam tikslui ji tarnauja. Tai užtikrina, kad svarbiausia informacija bus lengvai pasiekiama ir ateityje.</li>
                 </ul>
             </div>
         </div>
@@ -358,9 +359,6 @@ def ataskaitos_dokumentacija_page():
         'section3': 10,  # 10% for section 3
         'section4': 10   # 10% for section 4
     }
-    # Add a large gap to push the quote to the bottom
-    st.sidebar.markdown("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>",
-                        unsafe_allow_html=True)
     # Automate the progress bar based on completed sections and weights
     sections = ['section1', 'section2', 'section3', 'section4']
     progress = sum([section_weights[section] for section in sections if st.session_state['section_completed'][section]])
@@ -409,23 +407,24 @@ def ataskaitos_dokumentacija_page():
         return missing_fields
 
     # Function to check for missing fields in Section 2
+    # Function to check for missing fields in Section 2
     def check_for_missing_fields_section2():
         missing_fields = []
         for i in range(st.session_state['data_sources_count']):
+            # Check for missing required fields in the data sources
             if not st.session_state.get(f'type_{i}'):
                 missing_fields.append(f"Tipas {i + 1}")
             if not st.session_state.get(f'details_{i}'):
                 missing_fields.append(f"Serveris/Duomenų bazė/Schema {i + 1}")
-            if not st.session_state.get(f'transformation_{i}'):
-                missing_fields.append(f"Transformacija {i + 1}")
-            if not st.session_state.get(f'link_{i}'):
-                missing_fields.append(f"Nuoroda {i + 1}")
-            if not st.session_state.get(f'maintransformation_{i}'):
-                missing_fields.append(f"Pagrindinė transformacija {i + 1}")
-            if not st.session_state.get(f'important{i}'):
-                missing_fields.append(f"Pastabos / Svarbu žinoti {i + 1}")    
+            # Validate code-related fields only if code fragment is provided
+            if st.session_state.get(f'code_fragment_{i}'):
+                if not st.session_state.get(f'code_language_{i}'):
+                    missing_fields.append(f"Transformacijos kalba {i + 1}")
+                if not st.session_state.get(f'code_comment_{i}'):
+                    missing_fields.append(f"Transformacijos komentaras {i + 1}")
 
         return missing_fields
+
 
     # Function to check for missing fields in Section 3
     def check_for_missing_fields_section3():
@@ -464,11 +463,21 @@ def ataskaitos_dokumentacija_page():
             'section3': False,
             'section4': False
         }
+        
+    @st.cache_data
+    def load_data_from_excel(file_path):
+        return pd.read_excel(file_path, engine='openpyxl')
 
+    file_path = r"/Users/nedasvaitkus/Desktop/ISM/AI course/AtaskaituDuomenis.xlsx"  # Replace with your actual path
+    df = load_data_from_excel(file_path)
+    # Assuming the report titles are in a column named 'Pavadinimas'
+    report_titles = ["Pasirinkite..."] + df['Pavadinimas'].tolist()
+    
     # Section 1: Pagrindinė įrankio informacija (Step 1)
     if st.session_state['current_step'] >= 1:
         with st.expander("1. Pagrindinė įrankio informacija", expanded=True):
-            st.session_state['report_name'] = st.text_input("Įrankio pavadinimas", placeholder="Įrašykite įrankio pavadinimą")
+            Pavadinimas = st.selectbox("Pasirinkite įrankio pavadinimą *", report_titles, key="pavadinimas")
+            st.session_state['report_name'] = st.text_input("Jei neradote įrankio pavadinimo, įrašykite", placeholder="Įrašykite įrankio pavadinimą")
             st.session_state['tool_name'] = st.text_input("Įrankio nuoroda", placeholder="Įklijuokite įrankio nuorodą")
             st.session_state['workspace'] = st.text_input("Įrankio workspace nuoroda (jei taikoma)",
                                                           placeholder="Įklijuokite įrankio workspace nuorodą")
@@ -514,10 +523,10 @@ def ataskaitos_dokumentacija_page():
                 st.session_state['data_sources_count'] = 1
 
             if 'data_sources' not in st.session_state:
-                st.session_state['data_sources'] = [{"type": "", "details": "", "transformation": "", "link": ""}]
+                st.session_state['data_sources'] = [{"type": "", "details": "", "transformation": "", "link": "", "maintransformation": "", "important": ""}]
 
             def add_data_source():
-                st.session_state['data_sources'].append({"type": "", "details": "", "transformation": "", "link": ""})
+                st.session_state['data_sources'].append({"type": "", "details": "", "transformation": "", "link": "", "maintransformation": "", "important": ""})
 
             def delete_data_source(index):
                 if st.session_state['data_sources_count'] > 1 and index > 0:
@@ -533,12 +542,29 @@ def ataskaitos_dokumentacija_page():
                 with col2:
                     st.text_input(f"Serveris/Duomenų bazė/Schema/Lenta/Pavadinimas", placeholder="Pateikite detales apie šaltinį", key=f"details_{i}")
 
-                st.text_area(f"Pagrindinė transformacija (jei taikoma)", placeholder="Įrašykite pagrindinę transformaciją", key=f"transformation_{i}")
-                st.text_input(f"Kur atliekama pagrindinė transformacija (jei taikoma)?", placeholder="Pateikite nuorodą", key=f"link_{i}")
-                st.markdown("---")
-                st.text_area(f"Pateikite kitas atliekamas transformacijas (jei taikoma)", placeholder="Pateikite kitas atliekamas transformacijas", key=f"maintransformation_{i}")
-                st.text_input(f"Pastabos / Svarbu žinoti", placeholder="Įrašykite svarbias pastabos ", key=f"important{i}")
-                
+                # Code-related inputs
+                st.selectbox(f"Atliktos transformacijos kalba", options=["Python", "SQL", "DAX"], key=f"code_language_{i}")
+                st.text_area(f"Transformacijos fragmentas (jei taikoma)", placeholder="Įklijuokite savo kodo fragmentą čia", key=f"code_fragment_{i}")
+
+                # Display the code with syntax highlighting based on selected language
+                code_language = st.session_state.get(f"code_language_{i}")
+                code_fragment = st.session_state.get(f"code_fragment_{i}")
+                if code_fragment:
+                    if code_language == "Python":
+                        st.code(code_fragment, language='python')
+                    elif code_language == "SQL":
+                        st.code(code_fragment, language='sql')
+                        # Įspėjimas dėl `*` SQL užklausoje
+                        if '*' in code_fragment:
+                            st.warning(
+                                "Naudoti * SQL užklausose, siekiant pasirinkti visas stulpelius, nėra rekomenduojama, nes tai nėra optimalu."
+                            )
+                    elif code_language == "DAX":
+                        # Streamlit neturi DAX sintaksės paryškinimo, tačiau galima naudoti 'sql' sintaksę
+                        st.code(code_fragment, language='sql')
+
+                # Comment for code explanation
+                st.text_area(f"Transformacijos komentaras", placeholder="Pridėkite paaiškinimą ar komentarą apie kodo fragmentą", key=f"code_comment_{i}")
 
                 if st.session_state['data_sources_count'] > 1 and i > 0:
                     if st.button(f"Pašalinti šaltinį {i + 1}", key=f"delete_{i}"):
@@ -548,7 +574,8 @@ def ataskaitos_dokumentacija_page():
                     st.markdown("---")
 
                 if i == st.session_state['data_sources_count'] - 1:
-                    if st.session_state.get(f'type_{i}') and st.session_state.get(f'details_{i}') and st.session_state.get(f'transformation_{i}') and st.session_state.get(f'link_{i}'):
+                    # Check if all fields for the current data source are filled before allowing to add a new one
+                    if st.session_state.get(f'type_{i}') and st.session_state.get(f'details_{i}') and st.session_state.get(f'transformation_{i}') and st.session_state.get(f'link_{i}') and st.session_state.get(f'maintransformation_{i}') and st.session_state.get(f'important_{i}'):
                         if st.button("Pridėti naują duomenų šaltinį"):
                             add_data_source()
                             st.session_state['data_sources_count'] += 1
