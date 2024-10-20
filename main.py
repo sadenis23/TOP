@@ -21,10 +21,6 @@ def pagrindinis_page():
     </style>
     <div class='sidebar-title'>Naudingos nuorodos</div>
 """, unsafe_allow_html=True)
-    # Add the GIF in the sidebar
-    st.sidebar.markdown("<br><br><br><br><br><br><br>", unsafe_allow_html=True) 
-    gif_url = "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExYnNyZWpmcWQyMzBldjN4aTdwOXFqNXR3Njg4NGpyYmdpeGZpenAzZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/k0ijJhqrUP4T2EvmJ1/giphy.webp"
-    st.sidebar.image(gif_url, use_column_width=True)
 
     # Adding custom CSS for card-like styling
     st.markdown("""
