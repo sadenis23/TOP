@@ -206,9 +206,8 @@ def top_ataskaitos_page():
                         "Komentarai_Pastabos": row['Komentarai/Pastabos'],
                         "DateAdded": datetime.now()  # Insert current timestamp
                     })
-            st.success("Data successfully inserted into SQL Server!")
         except Exception as e:
-            st.error(f"Failed to insert data into SQL Server: {e}")
+            st.error(f"Duomenų nepavyko išsiųsti: {e}")
 
 
     # Load report titles from Excel
@@ -343,7 +342,7 @@ def top_ataskaitos_page():
     display_report_form()
 
     # Show button to submit the form only if personal info is filled
-    if is_personal_info_filled():
+    if is_personal_info_filled() and not st.session_state.is_form_submitted:
         st.markdown("---")
         st.markdown('<div class="submit-button">', unsafe_allow_html=True)
         if st.button("Baigti pildyti formą ir siųsti duomenis"):
@@ -352,8 +351,14 @@ def top_ataskaitos_page():
                 missing_fields_str = ', '.join(missing_fields)
                 st.info(f"Neužpildyti šie laukai: {missing_fields_str}")
             else:
+                # Create a placeholder for the status messages
+                status_message = st.empty()
+
+                # Show "Please wait" message
+                status_message.info("Palaukite, duomenys yra siunčiami...")
+
+                # Set flag to prevent further submissions
                 st.session_state.is_form_submitted = True
-                st.success("Ataskaita sėkmingai pateikta!")
 
                 # Display submitted information
                 st.markdown("## Jūsų pateikta informacija:")
@@ -366,15 +371,22 @@ def top_ataskaitos_page():
                 for key, value in st.session_state.report_data.items():
                     st.write(f"**{key}:** {value}")
                 
-                # Create a DataFrame
+                # Create a DataFrame and store to SQL
                 combined_data = {**st.session_state.user_info, **st.session_state.report_data}
                 df = pd.DataFrame([combined_data])
 
                 # Store to SQL
                 store_to_sql(df)
 
+                # After storing the data, update the placeholder with success message
+                status_message.success("✅ Duomenys pateikti sėkmingai!")
+        
         st.markdown('</div>', unsafe_allow_html=True)
-            
+
+    # If the form is already submitted, show a warning
+    elif st.session_state.is_form_submitted:
+        st.warning("Ataskaita jau buvo pateikta šios sesijos metu. Negalima pateikti antrą kartą.")
+                
 # IRANKIO DOKUMENTACIJA--------------------------------------------------------------------------
 def ataskaitos_dokumentacija_page():
     # Set page layout and title
