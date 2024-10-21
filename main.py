@@ -3,6 +3,11 @@ from streamlit_tags import st_tags
 import pandas as pd
 from streamlit_navigation_bar import st_navbar
 from streamlit_option_menu import option_menu
+from sqlalchemy import create_engine
+import urllib
+from sqlalchemy import VARCHAR
+from sqlalchemy import text
+from datetime import datetime
 
 st.set_page_config(page_title="📚 ESO Dokumentacija", layout="centered")
 
@@ -21,6 +26,7 @@ def pagrindinis_page():
     </style>
     <div class='sidebar-title'>Naudingos nuorodos</div>
 """, unsafe_allow_html=True)
+
 
     # Adding custom CSS for card-like styling
     st.markdown("""
@@ -151,12 +157,66 @@ def top_ataskaitos_page():
             </div>
         """, unsafe_allow_html=True)
 
+    def store_to_sql(df):
+        # Connection details
+        f_server = 'qpuyr2s222zuplnuhyog2iiq2i-qjnq56ukjhuu7pslxusprbzoly.datawarehouse.fabric.microsoft.com'
+        f_database = 'Streamlit'
+        f_driver = 'ODBC Driver 17 for SQL Server'
+        f_user = 'sys-reportimport%40eso.lt'  # %40 represents @
+        f_pass1 = '5ccM&TgZ2p^k%40ywv'  # %40 represents @
+
+        # Create a connection string for SQLAlchemy
+        connection_string = f'mssql+pyodbc://{f_user}:{f_pass1}@{f_server}/{f_database}?driver={f_driver}&Trusted_Connection=no&Authentication=ActiveDirectoryPassword'
+
+        # Create a SQLAlchemy engine
+        engine = create_engine(connection_string)
+
+        # Use the correct table name with schema [TOP].[TOPAtaskaitos]
+        table_name = '[TOP].[TOPAtaskaitos]'
+
+        insert_query = f"""
+        INSERT INTO {table_name} 
+        (Vardas, Pavarde, El_Pastas, Pavadinimas, Savininkas, Tema, Kategorija, Papildoma_Kategorija, Skyrius, Kiti_Skyriai, Naudojimo_Daznumas, Naudojama_ESO_BL_Lentoje, Iseina_I_Isore, Komentarai_Pastabos, DateAdded)
+        VALUES (:Vardas, :Pavarde, :El_Pastas, :Pavadinimas, :Savininkas, :Tema, :Kategorija, :Papildoma_Kategorija, :Skyrius, :Kiti_Skyriai, :Naudojimo_Daznumas, :Naudojama_ESO_BL_Lentoje, :Iseina_I_Isore, :Komentarai_Pastabos, :DateAdded)
+        """
+
+        try:
+            with engine.begin() as connection:  # This will handle commits automatically
+                for _, row in df.iterrows():
+                    # Process categories: Use the first item as 'Kategorija' and the rest as 'Papildoma_Kategorija'
+                    kategorijos = row['Kategorijos'] if isinstance(row['Kategorijos'], list) else [row['Kategorijos']]
+                    primary_category = kategorijos[0] if kategorijos else ''
+                    additional_category = ', '.join(kategorijos[1:]) if len(kategorijos) > 1 else ''
+
+                    # Insert data into the table
+                    connection.execute(text(insert_query), {
+                        "Vardas": row['Vardas'],
+                        "Pavarde": row['Pavarde'],
+                        "El_Pastas": row['El. Paštas'],
+                        "Pavadinimas": row['Pavadinimas'],
+                        "Savininkas": row['Savininkas'],
+                        "Tema": row['Tema'],
+                        "Kategorija": primary_category,
+                        "Papildoma_Kategorija": additional_category,
+                        "Skyrius": row['Skyrius'],
+                        "Kiti_Skyriai": row['Kiti skyriai'],
+                        "Naudojimo_Daznumas": row['Naudojimo dažnumas'],
+                        "Naudojama_ESO_BL_Lentoje": row['Naudojama ESO BL lentoje'],
+                        "Iseina_I_Isore": row['Išeina į išorę'],
+                        "Komentarai_Pastabos": row['Komentarai/Pastabos'],
+                        "DateAdded": datetime.now()  # Insert current timestamp
+                    })
+            st.success("Data successfully inserted into SQL Server!")
+        except Exception as e:
+            st.error(f"Failed to insert data into SQL Server: {e}")
+
+
     # Load report titles from Excel
     @st.cache_data
     def load_data_from_excel(file_path):
-        return pd.read_excel(file_path, engine='openpyxl')
+       return pd.read_excel(file_path, engine='openpyxl')
 
-    file_path = r"/Users/nedasvaitkus/Desktop/ISM/AI course/AtaskaituDuomenis.xlsx"  # Replace with your actual path
+    file_path = r"C:\DAS server data\TOP_forma\AtaskaituDuomenis.xlsx"  # Replace with your actual path
     df = load_data_from_excel(file_path)
 
     # Assuming the report titles are in a column named 'Pavadinimas'
@@ -305,8 +365,16 @@ def top_ataskaitos_page():
                 st.markdown("## Ataskaita:")
                 for key, value in st.session_state.report_data.items():
                     st.write(f"**{key}:** {value}")
+                
+                # Create a DataFrame
+                combined_data = {**st.session_state.user_info, **st.session_state.report_data}
+                df = pd.DataFrame([combined_data])
+
+                # Store to SQL
+                store_to_sql(df)
+
         st.markdown('</div>', unsafe_allow_html=True)
-        
+            
 # IRANKIO DOKUMENTACIJA--------------------------------------------------------------------------
 def ataskaitos_dokumentacija_page():
     # Set page layout and title
@@ -468,7 +536,7 @@ def ataskaitos_dokumentacija_page():
     def load_data_from_excel(file_path):
         return pd.read_excel(file_path, engine='openpyxl')
 
-    file_path = r"/Users/nedasvaitkus/Desktop/ISM/AI course/AtaskaituDuomenis.xlsx"  # Replace with your actual path
+    file_path = r"C:\DAS server data\TOP_forma\AtaskaituDuomenis.xlsx"  # Replace with your actual path
     df = load_data_from_excel(file_path)
     # Assuming the report titles are in a column named 'Pavadinimas'
     report_titles = ["Pasirinkite..."] + df['Pavadinimas'].tolist()
