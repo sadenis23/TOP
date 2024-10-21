@@ -890,7 +890,6 @@ def show_footer():
     """, unsafe_allow_html=True)
     
 
-
 def main():
     # Create a longer navbar with additional padding, spacing, and custom styles
     page = option_menu(
