@@ -460,7 +460,7 @@ def ataskaitos_dokumentacija_page():
     def next_section(section_key):
         st.session_state['section_completed'][section_key] = True
         st.session_state['current_step'] += 1
-        st.success(f"Automatiškai išsaugota! Galite tęsti toliau.")
+        st.success(f"Perėjote į kitą žingsnį!")
 
     # Function to check for missing fields in Section 1
     def check_for_missing_fields_section1():
@@ -485,26 +485,6 @@ def ataskaitos_dokumentacija_page():
             missing_fields.append("Tematika")
 
         return missing_fields
-
-    # Function to check for missing fields in Section 2
-    # Function to check for missing fields in Section 2
-    def check_for_missing_fields_section2():
-        missing_fields = []
-        for i in range(st.session_state['data_sources_count']):
-            # Check for missing required fields in the data sources
-            if not st.session_state.get(f'type_{i}'):
-                missing_fields.append(f"Tipas {i + 1}")
-            if not st.session_state.get(f'details_{i}'):
-                missing_fields.append(f"Serveris/Duomenų bazė/Schema {i + 1}")
-            # Validate code-related fields only if code fragment is provided
-            if st.session_state.get(f'code_fragment_{i}'):
-                if not st.session_state.get(f'code_language_{i}'):
-                    missing_fields.append(f"Transformacijos kalba {i + 1}")
-                if not st.session_state.get(f'code_comment_{i}'):
-                    missing_fields.append(f"Transformacijos komentaras {i + 1}")
-
-        return missing_fields
-
 
     # Function to check for missing fields in Section 3
     def check_for_missing_fields_section3():
@@ -603,15 +583,28 @@ def ataskaitos_dokumentacija_page():
                 st.session_state['data_sources_count'] = 1
 
             if 'data_sources' not in st.session_state:
-                st.session_state['data_sources'] = [{"type": "", "details": "", "transformation": "", "link": "", "maintransformation": "", "important": ""}]
+                st.session_state['data_sources'] = [{"type": "", "details": "", "code_language": "", "code_fragment": ""}]
 
             def add_data_source():
-                st.session_state['data_sources'].append({"type": "", "details": "", "transformation": "", "link": "", "maintransformation": "", "important": ""})
+                st.session_state['data_sources'].append({"type": "", "details": "", "code_language": "", "code_fragment": ""})
 
             def delete_data_source(index):
                 if st.session_state['data_sources_count'] > 1 and index > 0:
                     st.session_state['data_sources'].pop(index)
                     st.session_state['data_sources_count'] -= 1
+
+            def check_for_missing_fields():
+                missing = []
+                for i in range(st.session_state['data_sources_count']):
+                    if not st.session_state.get(f'type_{i}'):
+                        missing.append(f'Tipas (šaltinis {i + 1})')
+                    if not st.session_state.get(f'details_{i}'):
+                        missing.append(f'Serveris/Duomenų bazė (šaltinis {i + 1})')
+                    if not st.session_state.get(f'code_language_{i}'):
+                        missing.append(f'Transformacijos kalba (šaltinis {i + 1})')
+                    if not st.session_state.get(f'code_fragment_{i}'):
+                        missing.append(f'Transformacijos fragmentas (šaltinis {i + 1})')
+                return missing
 
             for i in range(st.session_state['data_sources_count']):
                 st.subheader(f"Duomenų šaltinis {i + 1}")
@@ -634,13 +627,12 @@ def ataskaitos_dokumentacija_page():
                         st.code(code_fragment, language='python')
                     elif code_language == "SQL":
                         st.code(code_fragment, language='sql')
-                        # Įspėjimas dėl `*` SQL užklausoje
+                        # Įspėjimas dėl `*` SQL užklausose
                         if '*' in code_fragment:
                             st.warning(
                                 "Naudoti * SQL užklausose, siekiant pasirinkti visas stulpelius, nėra rekomenduojama, nes tai nėra optimalu."
                             )
                     elif code_language == "DAX":
-                        # Streamlit neturi DAX sintaksės paryškinimo, tačiau galima naudoti 'sql' sintaksę
                         st.code(code_fragment, language='sql')
 
                 # Comment for code explanation
@@ -654,22 +646,26 @@ def ataskaitos_dokumentacija_page():
                     st.markdown("---")
 
                 if i == st.session_state['data_sources_count'] - 1:
-                    # Check if all fields for the current data source are filled before allowing to add a new one
-                    if st.session_state.get(f'type_{i}') and st.session_state.get(f'details_{i}') and st.session_state.get(f'transformation_{i}') and st.session_state.get(f'link_{i}') and st.session_state.get(f'maintransformation_{i}') and st.session_state.get(f'important_{i}'):
+                    # Check if the basic fields for the current data source are filled before allowing to add a new one
+                    if st.session_state.get(f'type_{i}') and st.session_state.get(f'details_{i}') and st.session_state.get(f'code_language_{i}') and st.session_state.get(f'code_fragment_{i}'):
                         if st.button("Pridėti naują duomenų šaltinį"):
                             add_data_source()
                             st.session_state['data_sources_count'] += 1
 
+            # Functionality for the "Tęsti" button
             if st.session_state['current_step'] == 2:
-                missing_fields = check_for_missing_fields_section2()
+                missing_fields = check_for_missing_fields()
                 st.markdown('<div class="center-button">', unsafe_allow_html=True)
                 if st.button("Tęsti", key="section2"):
                     st.session_state['attempted_section']['section2'] = True
                     if not missing_fields:
-                        next_section('section2')
-                if st.session_state['attempted_section']['section2'] and missing_fields:
-                    st.warning(f"Prašome užpildyti šiuos laukus: {', '.join(missing_fields)}")
+                        # Move to the next section if there are no missing fields
+                        st.session_state['current_step'] += 1
+                        st.success("Perėjote į kitą žingsnį!")
+                    else:
+                        st.warning(f"Prašome užpildyti šiuos laukus: {', '.join(missing_fields)}")
                 st.markdown('</div>', unsafe_allow_html=True)
+
 
     # Section 3: Įrankio konfiguracija (Step 3)
     if st.session_state['current_step'] >= 3:
@@ -726,7 +722,7 @@ def ataskaitos_dokumentacija_page():
                 if st.button("Baigti pildyti ir pateikti duomenis", key="section4"):
                     st.session_state['attempted_section']['section4'] = True
                     next_section('section4')
-                    st.success("Pateikimas baigtas. Visi duomenys automatiškai išsaugoti!")
+                    st.success("Pateikimas baigtas. Visi duomenys išsaugoti!")
                 st.markdown('</div>', unsafe_allow_html=True)
 
 
