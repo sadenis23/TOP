@@ -1,30 +1,49 @@
 import streamlit as st
-from urllib.parse import urlencode
-import random
-import string
+from urllib.parse import urlencode, quote
+import re
 
-# Helper function to generate random text URL
-def generate_random_url():
-    """Generates a random URL for testing purposes."""
-    random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
-    return f"https://example.com/reports/{random_string}"
+# Helper function to generate a custom URL from the report's title and date
+def generate_custom_url(report):
+    """Generates a URL using the report title and date."""
+    title_sanitized = re.sub(r'\W+', '-', report['title'].lower()).strip('-')
+    return f"https://example.com/reports/{title_sanitized}-{report['date']}"
 
-# Sample report data (fictional) with random URLs
+# Sample report data (fictional) with custom URLs
 report_data = [
     {
         "title": "2024 Sales Report",
         "author": "Alice Johnson",
         "date": "2024-10-01",
-        "description": "A comprehensive analysis of the sales performance for 2024.",
-        "link": generate_random_url(),
+        "description": (
+            "This comprehensive report covers the sales performance for the year 2024, highlighting "
+            "key trends, regional performance, and product line analysis. The report includes detailed "
+            "metrics on revenue growth, market share, and sales targets for the year."
+        ),
+        "details": {
+            "Revenue Growth": "15% year-over-year increase in total revenue.",
+            "Top Performing Regions": "North America (30% growth), Europe (25% growth), APAC (20% growth).",
+            "Product Line Breakdown": "Electronics (50% of sales), Clothing (30%), Home Appliances (20%).",
+            "Key Metrics": "Total Sales: $12.5M | New Customers: 8,000+ | Repeat Purchase Rate: 45%"
+        },
+        "link": generate_custom_url({"title": "2024 Sales Report", "date": "2024-10-01"}),
         "image": "https://via.placeholder.com/150"  # Placeholder image
     },
     {
         "title": "2023 Marketing Overview",
         "author": "Bob Smith",
         "date": "2023-12-20",
-        "description": "Detailed insights into the marketing campaigns of 2023.",
-        "link": generate_random_url(),
+        "description": (
+            "This report offers a detailed overview of the marketing campaigns executed in 2023. "
+            "It includes performance metrics from key campaigns, return on investment (ROI), and "
+            "the strategies used to grow brand awareness and customer engagement."
+        ),
+        "details": {
+            "Top Campaigns": "Summer Product Launch Campaign, Holiday Discount Campaign, Influencer Marketing Campaign.",
+            "ROI Metrics": "Average ROI across campaigns: 350%. Influencer marketing contributed 40% to overall sales.",
+            "Customer Engagement": "Social media engagement grew by 25%, email open rates increased by 12%.",
+            "Advertising Spend": "Total advertising spend: $1.2M | Customer acquisition cost: $45"
+        },
+        "link": generate_custom_url({"title": "2023 Marketing Overview", "date": "2023-12-20"}),
         "image": "https://via.placeholder.com/150"
     },
     {
@@ -32,7 +51,7 @@ report_data = [
         "author": "Clara Davis",
         "date": "2024-09-15",
         "description": "Findings from the customer satisfaction survey conducted in Q3 2024.",
-        "link": generate_random_url(),
+        "link": generate_custom_url({"title": "Customer Satisfaction Survey 2024", "date": "2024-09-15"}),
         "image": "https://via.placeholder.com/150"
     },
     {
@@ -40,7 +59,7 @@ report_data = [
         "author": "Daniel Lee",
         "date": "2024-08-30",
         "description": "An in-depth review of the product development efforts for the year.",
-        "link": generate_random_url(),
+        "link": generate_custom_url({"title": "Product Development Report", "date": "2024-08-30"}),
         "image": "https://via.placeholder.com/150"
     },
     {
@@ -48,7 +67,7 @@ report_data = [
         "author": "Emma Wilson",
         "date": "2024-07-15",
         "description": "The official report of the launch of the new product line for 2024.",
-        "link": generate_random_url(),
+        "link": generate_custom_url({"title": "New Product Launch 2024", "date": "2024-07-15"}),
         "image": "https://via.placeholder.com/150"
     }
 ]
@@ -101,6 +120,13 @@ def show_report_details(report):
     st.markdown(f"## {report['title']}")
     st.markdown(f"**Author:** {report['author']}  |  **Date:** {report['date']}")
     st.write(report['description'])
+
+    # Show additional detailed information if available
+    if 'details' in report:
+        st.markdown("### Key Highlights:")
+        for key, value in report['details'].items():
+            st.markdown(f"**{key}:** {value}")
+    
     st.markdown(f"[📄 View Full Report External Link]({report['link']})")
 
     # Back button to go back to the list
