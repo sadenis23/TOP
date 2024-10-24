@@ -416,6 +416,91 @@ def ataskaitos_dokumentacija_page():
         <div class='sidebar-title'>Naudingos nuorodos</div>
     """, unsafe_allow_html=True)
 
+# ------------------------------------------------------------------------------------------------------------
+    def store_to_sql():
+        # Connection details
+        f_server = 'qpuyr2s222zuplnuhyog2iiq2i-qjnq56ukjhuu7pslxusprbzoly.datawarehouse.fabric.microsoft.com'
+        f_database = 'Streamlit'
+        f_driver = 'ODBC Driver 17 for SQL Server'
+        f_user = 'sys-reportimport%40eso.lt'  # %40 represents @
+        f_pass1 = '5ccM&TgZ2p^k%40ywv'  # %40 represents @
+
+        # Create a connection string for SQLAlchemy
+        connection_string = f'mssql+pyodbc://{f_user}:{f_pass1}@{f_server}/{f_database}?driver={f_driver}&Trusted_Connection=no&Authentication=ActiveDirectoryPassword'
+
+        # Create a SQLAlchemy engine
+        engine = create_engine(connection_string)
+
+        # Use the correct table name with schema [TOP].[Dokumentacija]
+        table_name = '[TOP].[Dokumentacija]'
+
+        insert_query = f"""
+        INSERT INTO {table_name} 
+        (
+            Pavadinimas, Tool_Name, Tool_URL, Workspace_URL, Executor, Clients, Tool_Type, 
+            Purpose, Selected_Processes, Topics, Tags, Orchestrator, GitLab_Integration, 
+            External_Tool, Data_Gateway, RLS, Fabric_Elements, Comments, 
+            DataSource_Type, Details, Code_Fragment, Code_Comment, DateAdded
+        ) 
+        VALUES 
+        (
+            :Pavadinimas, :Tool_Name, :Tool_URL, :Workspace_URL, :Executor, :Clients, :Tool_Type, 
+            :Purpose, :Selected_Processes, :Topics, :Tags, :Orchestrator, :GitLab_Integration, 
+            :External_Tool, :Data_Gateway, :RLS, :Fabric_Elements, :Comments, 
+            :DataSource_Type, :Details, :Code_Fragment, :Code_Comment, :DateAdded
+        )
+        """
+
+        # Convert list of values into a comma-separated string for multiselect fields
+        tool_type_str = ','.join(st.session_state['tool_type'])
+        selected_processes_str = ','.join(st.session_state['selected_processes'])
+        topics_str = ','.join(st.session_state['topics'])
+        tags_str = ','.join([tema.strip() for tema in st.session_state['tags'].split(',')]) if 'tags' in st.session_state else ""
+        fabric_elements_str = ','.join(st.session_state['fabric'])
+
+        try:
+            # Begin transaction and insert data
+            with engine.begin() as conn:
+                for i in range(st.session_state['data_sources_count']):
+                    conn.execute(text(insert_query), {
+                        'Pavadinimas': st.session_state.get('pavadinimas'),                   # Pavadinimas (Report Title)
+                        'Tool_Name': st.session_state.get('tool_name'),                       # Tool_Name
+                        'Tool_URL': st.session_state.get('tool_url'),                         # Tool_URL
+                        'Workspace_URL': st.session_state.get('workspace'),                   # Workspace_URL
+                        'Executor': st.session_state.get('executor'),                         # Executor
+                        'Clients': st.session_state.get('clients'),                           # Clients
+                        'Tool_Type': tool_type_str,                                           # Tool_Type (list -> str)
+                        'Purpose': st.session_state.get('purpose'),                           # Purpose
+                        'Selected_Processes': selected_processes_str,                         # Selected_Processes (list -> str)
+                        'Topics': topics_str,                                                 # Topics (list -> str)
+                        'Tags': tags_str,                                                     # Tags (from text input)
+                        'Orchestrator': st.session_state.get('orchestrator'),                 # Orchestrator (Yes/No)
+                        'GitLab_Integration': st.session_state.get('gitlab'),                 # GitLab_Integration (Yes/No)
+                        'External_Tool': st.session_state.get('external'),                    # External_Tool (Yes/No)
+                        'Data_Gateway': st.session_state.get('data_gateway'),                 # Data_Gateway (Yes/No)
+                        'RLS': st.session_state.get('rls'),                                   # RLS (Yes/No)
+                        'Fabric_Elements': fabric_elements_str,                               # Fabric_Elements (list -> str)
+                        'Comments': st.session_state.get('comments'),                         # Comments (from text area),
+                        'DataSource_Type': st.session_state.get(f'type_{i}'),                 # DataSource_Type
+                        'Details': st.session_state.get(f'details_{i}'),                      # Details (Server/Database/Schema/Name)
+                        'Code_Fragment': st.session_state.get(f'code_fragment_{i}'),          # Code_Fragment
+                        'Code_Comment': st.session_state.get(f'code_comment_{i}'),            # Code_Comment
+                        'DateAdded': datetime.now()                                           # DateAdded (current timestamp)
+                    })
+
+                # Show success message to the user after successful insertion
+                st.success("Duomenys buvo sėkmingai išsaugoti duomenų bazėje!")
+
+        except Exception as e:
+            # Handle any exceptions that occur during the database operation
+            st.error(f"Įvyko klaida siunčiant duomenis į duomenų bazę: {str(e)}")
+
+        finally:
+            # Close the connection
+            st.info("Duomenų bazės ryšys buvo uždarytas.")
+
+
+
 
     # Adjust session state initialization for section tracking
     if 'current_step' not in st.session_state:
@@ -462,47 +547,6 @@ def ataskaitos_dokumentacija_page():
         st.session_state['current_step'] += 1
         st.success(f"Perėjote į kitą žingsnį!")
 
-    # Function to check for missing fields in Section 1
-    def check_for_missing_fields_section1():
-        missing_fields = []
-        if not st.session_state.get('report_name'):
-            missing_fields.append("Įrankio pavadinimas")
-        if not st.session_state.get('tool_name'):
-            missing_fields.append("Įrankio nuoroda")
-        if not st.session_state.get('workspace'):
-            missing_fields.append("Įrankio workspace")
-        if not st.session_state.get('executor'):
-            missing_fields.append("Projekto vykdytojas")
-        if not st.session_state.get('clients'):
-            missing_fields.append("Projekto užsakovai")
-        if not st.session_state.get('tool_type'):
-            missing_fields.append("Įrankio tipas")
-        if not st.session_state.get('purpose'):
-            missing_fields.append("Paskirtis")
-        if not st.session_state.get('selected_processes'):
-            missing_fields.append("Procesai")
-        if not st.session_state.get('topics'):
-            missing_fields.append("Tematika")
-
-        return missing_fields
-
-    # Function to check for missing fields in Section 3
-    def check_for_missing_fields_section3():
-        missing_fields = []
-        if not st.session_state.get('orchestrator'):
-            missing_fields.append("Kodo orchestratorius")
-        if not st.session_state.get('gitlab'):
-            missing_fields.append("GitLab integracija")
-        if not st.session_state.get('data_gateway'):
-            missing_fields.append("Data Gateway")
-        if not st.session_state.get('rls'):
-            missing_fields.append("Duomenų saugos sistema (RLS)")
-        if not st.session_state.get('external'):
-            missing_fields.append("Ar išeina į išorę?")
-        if not st.session_state.get('fabric'):
-            missing_fields.append("Microsoft Fabric elementai")
-
-        return missing_fields
 
     # Initialize session state for the progress and sections
     if 'current_step' not in st.session_state:
@@ -537,10 +581,10 @@ def ataskaitos_dokumentacija_page():
     if st.session_state['current_step'] >= 1:
         with st.expander("1. Pagrindinė įrankio informacija", expanded=True):
             Pavadinimas = st.selectbox("Pasirinkite įrankio pavadinimą *", report_titles, key="pavadinimas")
-            st.session_state['report_name'] = st.text_input("Jei neradote įrankio pavadinimo, įrašykite", placeholder="Įrašykite įrankio pavadinimą")
-            st.session_state['tool_name'] = st.text_input("Įrankio nuoroda", placeholder="Įklijuokite įrankio nuorodą")
-            st.session_state['workspace'] = st.text_input("Įrankio workspace nuoroda (jei taikoma)",
-                                                          placeholder="Įklijuokite įrankio workspace nuorodą")
+            st.session_state['tool_name'] = st.text_input("Jei neradote įrankio pavadinimo, įrašykite", placeholder="Įrašykite įrankio pavadinimą")
+            st.session_state['tool_url'] = st.text_input("Įrankio nuoroda", placeholder="Įklijuokite įrankio nuorodą")
+            st.session_state['workspace'] = st.text_input("Įrankio workspace nuoroda (jei patalpintas)",
+                                                        placeholder="Įklijuokite įrankio workspace nuorodą")
 
             col1, col2 = st.columns(2)
             with col1:
@@ -564,16 +608,11 @@ def ataskaitos_dokumentacija_page():
                 temas_list = [tema.strip() for tema in tags.split(',')]
                 st.write("**Pateiktos temos:**", ", ".join(temas_list))
 
-            if st.session_state['current_step'] == 1:
-                missing_fields = check_for_missing_fields_section1()
-                st.markdown('<div class="center-button">', unsafe_allow_html=True)
-                if st.button("Tęsti", key="section1"):
-                    st.session_state['attempted_section']['section1'] = True
-                    if not missing_fields:
-                        next_section('section1')
-                if st.session_state['attempted_section']['section1'] and missing_fields:
-                    st.warning(f"Prašome užpildyti šiuos laukus: {', '.join(missing_fields)}")
-                st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('<div class="center-button">', unsafe_allow_html=True)
+            if st.button("Tęsti", key="section1"):
+                st.session_state['attempted_section']['section1'] = True
+                next_section('section1')
+            st.markdown('</div>', unsafe_allow_html=True)
 
     # Section 2: Duomenų šaltiniai (Step 2)
     if st.session_state['current_step'] >= 2:
@@ -593,19 +632,6 @@ def ataskaitos_dokumentacija_page():
                     st.session_state['data_sources'].pop(index)
                     st.session_state['data_sources_count'] -= 1
 
-            def check_for_missing_fields():
-                missing = []
-                for i in range(st.session_state['data_sources_count']):
-                    if not st.session_state.get(f'type_{i}'):
-                        missing.append(f'Tipas (šaltinis {i + 1})')
-                    if not st.session_state.get(f'details_{i}'):
-                        missing.append(f'Serveris/Duomenų bazė (šaltinis {i + 1})')
-                    if not st.session_state.get(f'code_language_{i}'):
-                        missing.append(f'Transformacijos kalba (šaltinis {i + 1})')
-                    if not st.session_state.get(f'code_fragment_{i}'):
-                        missing.append(f'Transformacijos fragmentas (šaltinis {i + 1})')
-                return missing
-
             for i in range(st.session_state['data_sources_count']):
                 st.subheader(f"Duomenų šaltinis {i + 1}")
                 col1, col2 = st.columns([1, 3])
@@ -615,25 +641,8 @@ def ataskaitos_dokumentacija_page():
                 with col2:
                     st.text_input(f"Serveris/Duomenų bazė/Schema/Lenta/Pavadinimas", placeholder="Pateikite detales apie šaltinį", key=f"details_{i}")
 
-                # Code-related inputs
-                st.selectbox(f"Atliktos transformacijos kalba", options=["Python", "SQL", "DAX"], key=f"code_language_{i}")
-                st.text_area(f"Transformacijos fragmentas (jei taikoma)", placeholder="Įklijuokite savo kodo fragmentą čia", key=f"code_fragment_{i}")
-
-                # Display the code with syntax highlighting based on selected language
-                code_language = st.session_state.get(f"code_language_{i}")
-                code_fragment = st.session_state.get(f"code_fragment_{i}")
-                if code_fragment:
-                    if code_language == "Python":
-                        st.code(code_fragment, language='python')
-                    elif code_language == "SQL":
-                        st.code(code_fragment, language='sql')
-                        # Įspėjimas dėl `*` SQL užklausose
-                        if '*' in code_fragment:
-                            st.warning(
-                                "Naudoti * SQL užklausose, siekiant pasirinkti visas stulpelius, nėra rekomenduojama, nes tai nėra optimalu."
-                            )
-                    elif code_language == "DAX":
-                        st.code(code_fragment, language='sql')
+                # Code-related input
+                st.text_area(f"Komentaras apie šaltinį ir jo ypatumus", placeholder="Pateikite komentarą apie šaltinį", key=f"code_fragment_{i}")
 
                 # Comment for code explanation
                 st.text_area(f"Transformacijos komentaras", placeholder="Pridėkite paaiškinimą ar komentarą apie kodo fragmentą", key=f"code_comment_{i}")
@@ -646,26 +655,16 @@ def ataskaitos_dokumentacija_page():
                     st.markdown("---")
 
                 if i == st.session_state['data_sources_count'] - 1:
-                    # Check if the basic fields for the current data source are filled before allowing to add a new one
-                    if st.session_state.get(f'type_{i}') and st.session_state.get(f'details_{i}') and st.session_state.get(f'code_language_{i}') and st.session_state.get(f'code_fragment_{i}'):
-                        if st.button("Pridėti naują duomenų šaltinį"):
-                            add_data_source()
-                            st.session_state['data_sources_count'] += 1
+                    if st.button("Pridėti naują duomenų šaltinį"):
+                        add_data_source()
+                        st.session_state['data_sources_count'] += 1
 
-            # Functionality for the "Tęsti" button
-            if st.session_state['current_step'] == 2:
-                missing_fields = check_for_missing_fields()
-                st.markdown('<div class="center-button">', unsafe_allow_html=True)
-                if st.button("Tęsti", key="section2"):
-                    st.session_state['attempted_section']['section2'] = True
-                    if not missing_fields:
-                        # Move to the next section if there are no missing fields
-                        st.session_state['current_step'] += 1
-                        st.success("Perėjote į kitą žingsnį!")
-                    else:
-                        st.warning(f"Prašome užpildyti šiuos laukus: {', '.join(missing_fields)}")
-                st.markdown('</div>', unsafe_allow_html=True)
-
+            st.markdown('<div class="center-button">', unsafe_allow_html=True)
+            if st.button("Tęsti", key="section2"):
+                st.session_state['attempted_section']['section2'] = True
+                st.session_state['current_step'] += 1
+                st.success("Perėjote į kitą žingsnį!")
+            st.markdown('</div>', unsafe_allow_html=True)
 
     # Section 3: Įrankio konfiguracija (Step 3)
     if st.session_state['current_step'] >= 3:
@@ -682,7 +681,7 @@ def ataskaitos_dokumentacija_page():
             with col2:
                 st.session_state['data_gateway'] = st.radio("Ar naudojamas Data Gateway?", options=["Taip", "Ne"], index=1, horizontal=False)
                 st.session_state['rls'] = st.radio("Ar yra įdiegta duomenų saugos sistema (RLS)?", options=["Taip", "Ne"], index=1, horizontal=False)
-            
+
             st.session_state['fabric'] = st.multiselect("Microsoft naudojami elementai", 
                 options=[
                     "Data Factory", 
@@ -699,17 +698,12 @@ def ataskaitos_dokumentacija_page():
                     "Kusto Query Language (KQL)"
                 ]
             )
-            
-            if st.session_state['current_step'] == 3:
-                missing_fields = check_for_missing_fields_section3()
-                st.markdown('<div class="center-button">', unsafe_allow_html=True)
-                if st.button("Tęsti", key="section3"):
-                    st.session_state['attempted_section']['section3'] = True
-                    if not missing_fields:
-                        next_section('section3')
-                if st.session_state['attempted_section']['section3'] and missing_fields:
-                    st.warning(f"Prašome užpildyti šiuos laukus: {', '.join(missing_fields)}")
-                st.markdown('</div>', unsafe_allow_html=True)
+
+            st.markdown('<div class="center-button">', unsafe_allow_html=True)
+            if st.button("Tęsti", key="section3"):
+                st.session_state['attempted_section']['section3'] = True
+                next_section('section3')
+            st.markdown('</div>', unsafe_allow_html=True)
 
     # Section 4: Komentarai / Pastabos (Step 4)
     if st.session_state['current_step'] >= 4:
@@ -717,14 +711,20 @@ def ataskaitos_dokumentacija_page():
             st.subheader("Papildoma informacija")
             st.session_state['comments'] = st.text_area("Pateikite pagrindinius įrankio iššūkius ar komentarus", placeholder="Pateikite papildomus komentarus arba pastabas")
 
-            if st.session_state['current_step'] == 4:
-                st.markdown('<div class="center-button">', unsafe_allow_html=True)
-                if st.button("Baigti pildyti ir pateikti duomenis", key="section4"):
-                    st.session_state['attempted_section']['section4'] = True
-                    next_section('section4')
-                    st.success("Pateikimas baigtas. Visi duomenys išsaugoti!")
-                st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('<div class="center-button">', unsafe_allow_html=True)
+            
+            if st.button("Baigti pildyti ir pateikti duomenis", key="section4"):
+                st.session_state['attempted_section']['section4'] = True
+                st.session_state['form_submitted'] = True  # Mark the form as submitted
 
+                # Trigger the SQL insertion process
+                store_to_sql()
+
+                # Move to the next section or indicate completion
+                next_section('section4')
+                st.success("Pateikimas baigtas. Visi duomenys išsaugoti!")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
 
 #------------------------------------------------------------------------------------------------------
 # Main app logic
