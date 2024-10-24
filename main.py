@@ -8,6 +8,7 @@ import urllib
 from sqlalchemy import VARCHAR
 from sqlalchemy import text
 from datetime import datetime
+from typing import Dict
 
 st.set_page_config(page_title="📚 ESO Dokumentacija", layout="centered")
 
@@ -380,6 +381,7 @@ def top_ataskaitos_page():
 
                 # After storing the data, update the placeholder with success message
                 status_message.success("✅ Duomenys pateikti sėkmingai!")
+                st.balloons()
         
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -489,85 +491,49 @@ def ataskaitos_dokumentacija_page():
                     })
 
                 # Show success message to the user after successful insertion
-                st.success("Duomenys buvo sėkmingai išsaugoti duomenų bazėje!")
+                st.success("✅ Duomenys pateikti sėkmingai!")
 
         except Exception as e:
             # Handle any exceptions that occur during the database operation
             st.error(f"Įvyko klaida siunčiant duomenis į duomenų bazę: {str(e)}")
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-        finally:
-            # Close the connection
-            st.info("Duomenų bazės ryšys buvo uždarytas.")
+    # Initialize session state variables if not already present
+    def initialize_session_state():
+        if 'current_step' not in st.session_state:
+            st.session_state['current_step'] = 1
+        if 'section_completed' not in st.session_state:
+            st.session_state['section_completed'] = {
+                'section1': False,
+                'section2': False,
+                'section3': False,
+                'section4': False
+            }
+        if 'form_in_progress' not in st.session_state:
+            st.session_state['form_in_progress'] = False  # Track if form submission is in progress
+        if 'attempted_section' not in st.session_state:
+            st.session_state['attempted_section'] = {
+                'section1': False,
+                'section2': False,
+                'section3': False,
+                'section4': False
+            }
 
+    # Initialize session state variables
+    initialize_session_state()
 
-
-
-    # Adjust session state initialization for section tracking
-    if 'current_step' not in st.session_state:
-        st.session_state['current_step'] = 1
-
-    # Adjust section tracking state for 4 sections only
-    if 'section_completed' not in st.session_state:
-        st.session_state['section_completed'] = {
-            'section1': False,
-            'section2': False,
-            'section3': False,
-            'section4': False
-        }
-    if 'form_submitted' not in st.session_state:
-        st.session_state['form_submitted'] = False  # Track if form has been submitted
-        
-    # Weights for each section
-    section_weights = {
-        'section1': 30,  # 30% for section 1
-        'section2': 50,  # 50% for section 2
-        'section3': 10,  # 10% for section 3
-        'section4': 10   # 10% for section 4
-    }
-    # Automate the progress bar based on completed sections and weights
-    sections = ['section1', 'section2', 'section3', 'section4']
-    progress = sum([section_weights[section] for section in sections if st.session_state['section_completed'][section]])
-
-    # Update progress calculation
-    if st.session_state['form_submitted']:
-        progress = 100  # Show 100% when the form is submitted
-
-    # Display the progress bar in the sidebar
-    st.sidebar.progress(progress / 100)
-
-    # Show success message if all sections are completed
-    if progress == 100:
-        st.sidebar.success("Sveikinu sėkmingai užpildžius įrankio dokumentaciją!")
-    else:
-        st.sidebar.info(f"Progresas: {int(progress)}%")
-
-        # Function to proceed to the next section
-    def next_section(section_key):
+    # Function to proceed to the next section
+    def next_section(section_key: str):
+        # Mark the current section as completed
         st.session_state['section_completed'][section_key] = True
-        st.session_state['current_step'] += 1
-        st.success(f"Perėjote į kitą žingsnį!")
+        st.session_state['attempted_section'][section_key] = True
+
+        # Ensure current_step doesn't go beyond 4
+        if st.session_state['current_step'] < 4:
+            st.session_state['current_step'] += 1
+            st.success(f"Perėjote į kitą žingsnį!")
 
 
-    # Initialize session state for the progress and sections
-    if 'current_step' not in st.session_state:
-        st.session_state['current_step'] = 1
-
-    if 'section_completed' not in st.session_state:
-        st.session_state['section_completed'] = {
-            'section1': False,
-            'section2': False,
-            'section3': False,
-            'section4': False
-        }
-
-    if 'attempted_section' not in st.session_state:
-        st.session_state['attempted_section'] = {
-            'section1': False,
-            'section2': False,
-            'section3': False,
-            'section4': False
-        }
-        
     @st.cache_data
     def load_data_from_excel(file_path):
         return pd.read_excel(file_path, engine='openpyxl')
@@ -717,12 +683,18 @@ def ataskaitos_dokumentacija_page():
                 st.session_state['attempted_section']['section4'] = True
                 st.session_state['form_submitted'] = True  # Mark the form as submitted
 
+                # Show the blue info message while data is being sent
+                sending_message = st.info("Palaukite, siunčiami duomenys...")
+
                 # Trigger the SQL insertion process
                 store_to_sql()
 
+                # Replace the blue message with a success message
+                sending_message.empty()
+                st.balloons()
+
                 # Move to the next section or indicate completion
                 next_section('section4')
-                st.success("Pateikimas baigtas. Visi duomenys išsaugoti!")
             
             st.markdown('</div>', unsafe_allow_html=True)
 
