@@ -611,7 +611,7 @@ def ataskaitos_dokumentacija_page():
                 st.text_area(f"Komentaras apie šaltinį ir jo ypatumus", placeholder="Pateikite komentarą apie šaltinį", key=f"code_fragment_{i}")
 
                 # Comment for code explanation
-                st.text_area(f"Transformacijos komentaras", placeholder="Pridėkite paaiškinimą ar komentarą apie kodo fragmentą", key=f"code_comment_{i}")
+                st.text_input(f"Naudinga nuoroda (pvz. Gitlab nuoroda į atlitkas šaltinio transformacijas)", placeholder="Pridėkite šaltinio naudingą nuorodoą", key=f"code_comment_{i}")
 
                 if st.session_state['data_sources_count'] > 1 and i > 0:
                     if st.button(f"Pašalinti šaltinį {i + 1}", key=f"delete_{i}"):
