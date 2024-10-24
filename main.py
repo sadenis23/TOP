@@ -679,23 +679,27 @@ def ataskaitos_dokumentacija_page():
 
             st.markdown('<div class="center-button">', unsafe_allow_html=True)
             
-            if st.button("Baigti pildyti ir pateikti duomenis", key="section4"):
-                st.session_state['attempted_section']['section4'] = True
-                st.session_state['form_submitted'] = True  # Mark the form as submitted
+            # Check if the form has already been submitted
+            if not st.session_state.get('form_submitted', False):
+                if st.button("Baigti pildyti ir pateikti duomenis", key="section4"):
+                    st.session_state['attempted_section']['section4'] = True
+                    st.session_state['form_submitted'] = True  # Mark the form as submitted
 
-                # Show the blue info message while data is being sent
-                sending_message = st.info("Palaukite, siunčiami duomenys...")
+                    # Show the blue info message while data is being sent
+                    sending_message = st.info("Palaukite, siunčiami duomenys...")
 
-                # Trigger the SQL insertion process
-                store_to_sql()
+                    # Trigger the SQL insertion process
+                    store_to_sql()
 
-                # Replace the blue message with a success message
-                sending_message.empty()
-                st.balloons()
+                    # Replace the blue message with a success message
+                    sending_message.empty()
+                    st.balloons()
 
-                # Move to the next section or indicate completion
-                next_section('section4')
-            
+                    # Move to the next section or indicate completion
+                    next_section('section4')
+            else:
+                st.warning("Dokumentacija jau buvo pateikta šios sesijos metu. Negalima pateikti antrą kartą.")  # Display a message if already submitted
+
             st.markdown('</div>', unsafe_allow_html=True)
 
 #------------------------------------------------------------------------------------------------------
