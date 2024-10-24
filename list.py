@@ -1,4 +1,4 @@
-import streamlit as st
+\import streamlit as st
 from urllib.parse import urlencode, quote_plus, unquote_plus
 import re
 
@@ -156,7 +156,7 @@ if selected_report_title:
         st.write("Ataskaita nerasta.")
 else:
     # If no report is selected, show the list of reports
-    st.title("📊 Organizacijos viršutinės ataskaitos")
+    st.title("ESO TOP Ataskaitos")
 
     # Sidebar for filtering and sorting
     search_term = st.sidebar.text_input("Ieškoti pagal pavadinimą ar autorių")
