@@ -704,211 +704,6 @@ def ataskaitos_dokumentacija_page():
 
             st.markdown('</div>', unsafe_allow_html=True)
 
-#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-def sarasas_page():
-    # Helper function to generate a custom URL from the report's title and date
-    def generate_custom_url(report):
-        title_sanitized = re.sub(r'\W+', '-', report['title'].lower()).strip('-')
-        return f"https://example.com/reports/{title_sanitized}-{report['date']}"
-    # Sample report data with custom URLs and tags for filtering
-    report_data = [
-        {
-            "title": "2024 metų pardavimų ataskaita",
-            "author": "Aistė Jonaitė",
-            "date": "2024-10-01",
-            "description": (
-                "Ši ataskaita apima 2024 metų pardavimų rezultatus, akcentuojant pagrindines tendencijas, "
-                "regioninius pardavimus ir produktų linijos analizę. Joje pateikiama išsami informacija apie pajamų augimą, "
-                "rinkos dalį ir metų pardavimų tikslus."
-            ),
-            "details": {
-                "Pajamų augimas": "15% metinis pajamų padidėjimas.",
-                "Geriausi regionai": "Šiaurės Amerika (30% augimas), Europa (25% augimas), APAC (20% augimas).",
-                "Produktų linijos": "Elektronika (50% pardavimų), Drabužiai (30%), Buitinė technika (20%).",
-                "Pagrindiniai rodikliai": "Bendri pardavimai: 12.5M € | Nauji klientai: 8,000+ | Pakartotinių pirkimų rodiklis: 45%"
-            },
-            "tags": ["Pardavimai", "Metinė apžvalga", "Augimas"],
-            "link": generate_custom_url({"title": "2024 metų pardavimų ataskaita", "date": "2024-10-01"})
-        },
-        {
-            "title": "2023 metų rinkodaros apžvalga",
-            "author": "Benas Kazlauskas",
-            "date": "2023-12-20",
-            "description": (
-                "Ši ataskaita pateikia išsamų 2023 metų rinkodaros kampanijų vertinimą. Joje įtraukti pagrindiniai kampanijų "
-                "rodikliai, investicijų grąža (ROI) ir strategijos, padėjusios auginti prekės ženklo žinomumą ir klientų įsitraukimą."
-            ),
-            "details": {
-                "Geriausios kampanijos": "Vasaros produktų išleidimas, Kalėdinės nuolaidos, Nuomonės formuotojų kampanija.",
-                "ROI rodikliai": "Vidutinis kampanijų ROI: 350%. Nuomonės formuotojų rinkodara prisidėjo 40% prie bendrų pardavimų.",
-                "Klientų įsitraukimas": "Socialinių tinklų įsitraukimas išaugo 25%, el. pašto atidarymo rodiklis padidėjo 12%.",
-                "Reklamos išlaidos": "Bendra reklamos išlaida: 1.2M € | Kliento įsigijimo kaina: 45 €"
-            },
-            "tags": ["Rinkodara", "Investicijos", "ROI"],
-            "link": generate_custom_url({"title": "2023 metų rinkodaros apžvalga", "date": "2023-12-20"})
-        },
-        {
-            "title": "2024 metų klientų pasitenkinimo apklausa",
-            "author": "Klara Petraitytė",
-            "date": "2024-09-15",
-            "description": "Rezultatai iš Q3 2024 metų klientų pasitenkinimo apklausos.",
-            "details": {
-                "Pasitenkinimo lygis": "89% klientų yra patenkinti produktais ir paslaugomis.",
-                "Nauji pasiūlymai": "Klientai siūlo daugiau asmeninių nuolaidų ir greitesnį aptarnavimą.",
-                "Lojalumas": "Pakartotiniai pirkimai: 45%."
-            },
-            "tags": ["Klientų pasitenkinimas", "Apklausa", "Lojalumas"],
-            "link": generate_custom_url({"title": "2024 metų klientų pasitenkinimo apklausa", "date": "2024-09-15"})
-        },
-        {
-            "title": "Produktų vystymo ataskaita 2024",
-            "author": "Dainius Liaukis",
-            "date": "2024-08-30",
-            "description": "Išsamus 2024 metų produktų vystymo veiklos vertinimas.",
-            "details": {
-                "Pagrindiniai pokyčiai": "Nauji funkcionalumai ir dizaino atnaujinimai pagal klientų poreikius.",
-                "Plėtros tikslai": "Padidinti vartotojų patogumą ir produkto efektyvumą.",
-                "Komandos veikla": "15+ naujų produktų versijų, išleistų per metus."
-            },
-            "tags": ["Produktų vystymas", "Plėtra", "Nauji produktai"],
-            "link": generate_custom_url({"title": "Produktų vystymo ataskaita 2024", "date": "2024-08-30"})
-        },
-        {
-            "title": "Naujo produkto pristatymas 2024",
-            "author": "Eglė Vaitkūnaitė",
-            "date": "2024-07-15",
-            "description": "Oficiali ataskaita apie naujo produktų linijos išleidimą 2024 metais.",
-            "details": {
-                "Produktų linija": "Nauja elektronikos produktų linija.",
-                "Klientų reakcija": "Išankstiniai užsakymai viršijo lūkesčius 20%.",
-                "Strategijos": "Rinkodaros kampanijos ir bendradarbiavimas su influenceriais."
-            },
-            "tags": ["Nauji produktai", "Pristatymas", "Rinkodara"],
-            "link": generate_custom_url({"title": "Naujo produkto pristatymas 2024", "date": "2024-07-15"})
-        },
-        {
-            "title": "2024 metų finansinė analizė",
-            "author": "Jonas Dargis",
-            "date": "2024-03-22",
-            "description": (
-                "Šioje ataskaitoje pateikiama 2024 metų I ketvirčio finansinė analizė, įskaitant pelno, išlaidų "
-                "ir investicijų rodiklius. Išryškinamos sritys, kuriose pasiektas didžiausias augimas."
-            ),
-            "details": {
-                "Pelnas": "2024 Q1 pelnas: 3.5M €.",
-                "Išlaidos": "Administracinės išlaidos sumažintos 10% per metus.",
-                "Investicijos": "200K € į naujų produktų kūrimą."
-            },
-            "tags": ["Finansai", "Analizė", "Investicijos"],
-            "link": generate_custom_url({"title": "2024 metų finansinė analizė", "date": "2024-03-22"})
-        },
-        {
-            "title": "Technologijų vystymo apžvalga 2024",
-            "author": "Diana Vilkaitė",
-            "date": "2024-05-05",
-            "description": (
-                "Ataskaita apie pagrindinius technologijų vystymo darbus 2024 metais. Aptariamos pagrindinės "
-                "technologijos ir inovacijos, padėjusios pagerinti produktų kokybę."
-            ),
-            "details": {
-                "Inovacijos": "Naujas AI funkcionalumas produktų personalizavimui.",
-                "Ateities planai": "Blockchain technologijų pritaikymo tyrimai.",
-                "Komandos pasiekimai": "15+ technologinių atnaujinimų, padidinančių našumą."
-            },
-            "tags": ["Technologijos", "Inovacijos", "Produktų kokybė"],
-            "link": generate_custom_url({"title": "Technologijų vystymo apžvalga 2024", "date": "2024-05-05"})
-        }
-    ]
-
-    # Load report data function
-    def load_report_data():
-        return report_data
-
-    # Reusable function to render a single report item in the list
-    def report_list_item(report):
-        # Full-width container for report content
-        with st.container():
-            # Left-aligned title and metadata
-            st.markdown(f"<h3 style='margin-bottom: 5px;'>{report['title']}</h3>", unsafe_allow_html=True)
-            st.markdown(f"<p style='color: #555; font-size: 14px;'>Autorius: {report['author']} | Data: {report['date']}</p>", unsafe_allow_html=True)
-            st.markdown(f"<p style='font-size: 16px; line-height: 1.6;'>{report['description']}</p>", unsafe_allow_html=True)
-
-            # Left-aligned button with top margin
-            params = urlencode({"report": quote_plus(report['title'])})
-            view_link = f"?{params}"
-            st.markdown(f"<div style='float: left; margin-top: 15px;'>"  # Adds space above the button
-                        f"<a href='{view_link}' style='text-decoration: none;'>"
-                        f"<button style='background-color: #FF4B4B; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;'>📄 Peržiūrėti pilną ataskaitą</button>"
-                        f"</a></div>", unsafe_allow_html=True)
-
-        # Divider line
-        st.markdown("<hr style='border: none; height: 1px; background-color: #ddd;'>", unsafe_allow_html=True)
-
-    # Function to show full details of a single report
-    def show_report_details(report):
-        st.markdown(f"## {report['title']}")
-        st.markdown(f"**Autorius:** {report['author']}  |  **Data:** {report['date']}")
-        st.write(report['description'])
-
-        if 'details' in report:
-            st.markdown("### Pagrindiniai akcentai:")
-            for key, value in report['details'].items():
-                st.markdown(f"**{key}:** {value}")
-        
-        st.markdown(f"[📄 Išorinis pilnos ataskaitos peržiūrėjimas]({report['link']})")
-
-        st.markdown("<a href='/' style='text-decoration: none;'>"
-                    f"<button style='background-color: #FF4B4B; color: white; border: none; padding: 10px 20px; text-align: center; border-radius: 5px; cursor: pointer;'>🔙 Grįžti į ataskaitų sąrašą</button>"
-                    f"</a>", unsafe_allow_html=True)
-
-    # Main Streamlit app
-    reports = load_report_data()
-
-    query_params = st.query_params
-    selected_report_title = query_params.get('report', [None])[0]
-
-    if selected_report_title:
-        selected_report_title = unquote_plus(selected_report_title).lower().strip()
-        selected_report = next((r for r in reports if r['title'].lower().strip() == selected_report_title), None)
-
-        if selected_report:
-            show_report_details(selected_report)
-        else:
-            st.write("Ataskaita nerasta.")
-    else:
-        st.markdown("<h1 style='text-align: center;'>TOP ataskaitų galerija</h1>", unsafe_allow_html=True)
-
-        # Sidebar filtering section
-        st.sidebar.header("Filtravimo ir rūšiavimo parinktys")
-        search_term = st.sidebar.text_input("Ieškoti pagal pavadinimą ar autorių")
-        filter_author = st.sidebar.selectbox("Filtruoti pagal autorių", ["Visi"] + list(set(report['author'] for report in reports)))
-        sort_by = st.sidebar.selectbox("Rūšiuoti pagal", ["Data", "Pavadinimas"])
-        
-        all_tags = list(set(tag for report in reports for tag in report.get('tags', [])))
-        filter_tags = st.sidebar.multiselect("Filtruoti pagal žymes", all_tags)
-
-        # Apply filters
-        if search_term:
-            reports = [r for r in reports if search_term.lower() in r['title'].lower() or search_term.lower() in r['author'].lower()]
-
-        if filter_author != "Visi":
-            reports = [r for r in reports if r['author'] == filter_author]
-
-        if filter_tags:
-            reports = [r for r in reports if set(filter_tags).intersection(r.get('tags', []))]
-
-        if sort_by == "Data":
-            reports = sorted(reports, key=lambda x: x['date'], reverse=True)
-        elif sort_by == "Pavadinimas":
-            reports = sorted(reports, key=lambda x: x['title'])
-
-        st.markdown(f"### Rodoma {len(reports)} ataskaitos", unsafe_allow_html=True)
-
-        for report in reports:
-            report_list_item(report)
-
-
-
 #------------------------------------------------------------------------------------------------------
 # Main app logic
 styles = {
@@ -955,8 +750,8 @@ def main():
     # Define a compact, responsive navbar with refined styles
     page = option_menu(
         menu_title=None,  # Hide the menu title
-        options=["Pagrindinis", "Forma", "Dokumentacija", "Ataskaitos"],  # Navbar options
-        icons=["house", "clipboard", "book", "file-text"],  # Icons for each option
+        options=["Pagrindinis", "Forma", "Dokumentacija"],  # Navbar options
+        icons=["house", "clipboard", "book"],  # Icons for each option
         menu_icon="cast",  # Optional menu icon
         default_index=0,  # Default selected index
         orientation="horizontal",  # Horizontal layout
@@ -994,9 +789,7 @@ def main():
     elif page == "Forma":
         top_ataskaitos_page()
     elif page == "Dokumentacija":
-        ataskaitos_dokumentacija_page()
-    elif page == "Ataskaitos":
-        sarasas_page()   
+        ataskaitos_dokumentacija_page()  
     show_footer()
 
 if __name__ == "__main__":
