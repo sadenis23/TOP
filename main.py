@@ -30,7 +30,6 @@ def pagrindinis_page():
     <div class='sidebar-title'>Naudingos nuorodos</div>
 """, unsafe_allow_html=True)
 
-
     # Adding custom CSS for card-like styling
     st.markdown("""
         <style>
@@ -218,14 +217,14 @@ def top_ataskaitos_page():
     def load_data_from_excel(file_path):
        return pd.read_excel(file_path, engine='openpyxl')
 
-    file_path = r"C:\DAS server data\TOP_forma\AtaskaituDuomenis.xlsx"  # Replace with your actual path
+    file_path = r"//Users//nedasvaitkus//Desktop//AtaskaituDuomenis.xlsx"  # Replace with your actual path
     df = load_data_from_excel(file_path)
 
     # Assuming the report titles are in a column named 'Pavadinimas'
     report_titles = ["Pasirinkite..."] + df['Pavadinimas'].tolist()
 
     # Predefined categories for "Ataskaitos kategorija"
-    predefined_categories = ["SMART'ai", "GV", "Finansai", "Dujos", "Neeilinė situacija", "Kita"]
+    predefined_categories = ["SMART'ai", "GV", "TP apkrovos" "Finansai", "Dujos", "Neeilinė situacija", "Kita"]
 
     # Initialize session state for storing user info and report data
     if 'user_info' not in st.session_state:
@@ -394,7 +393,7 @@ def top_ataskaitos_page():
 # IRANKIO DOKUMENTACIJA--------------------------------------------------------------------------
 def ataskaitos_dokumentacija_page():
     # Set page layout and title
-    st.markdown("<h1 style='text-align: center;'>Įrankio dokumentacija</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center;'>Dokumentacijos forma</h1>", unsafe_allow_html=True)
 
     # Custom CSS to center buttons
     st.markdown("""
@@ -499,7 +498,6 @@ def ataskaitos_dokumentacija_page():
             # Handle any exceptions that occur during the database operation
             st.error(f"Įvyko klaida siunčiant duomenis į duomenų bazę: {str(e)}")
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
     # Initialize session state variables if not already present
     def initialize_session_state():
         if 'current_step' not in st.session_state:
@@ -540,7 +538,7 @@ def ataskaitos_dokumentacija_page():
     def load_data_from_excel(file_path):
         return pd.read_excel(file_path, engine='openpyxl')
 
-    file_path = r"C:\DAS server data\TOP_forma\AtaskaituDuomenis.xlsx"  # Replace with your actual path
+    file_path = r"//Users//nedasvaitkus//Desktop//AtaskaituDuomenis.xlsx"  # Replace with your actual path
     df = load_data_from_excel(file_path)
     # Assuming the report titles are in a column named 'Pavadinimas'
     report_titles = ["Pasirinkite..."] + df['Pavadinimas'].tolist()
@@ -583,37 +581,54 @@ def ataskaitos_dokumentacija_page():
             st.markdown('</div>', unsafe_allow_html=True)
 
     # Section 2: Duomenų šaltiniai (Step 2)
+    # Section 2: Duomenų šaltiniai (Step 2)
     if st.session_state['current_step'] >= 2:
         with st.expander("2. Duomenų šaltiniai", expanded=False):
-
+            
+            # Initialize session state for data sources
             if 'data_sources_count' not in st.session_state:
                 st.session_state['data_sources_count'] = 1
 
             if 'data_sources' not in st.session_state:
                 st.session_state['data_sources'] = [{"type": "", "details": "", "code_language": "", "code_fragment": ""}]
-
+            
+            # Add new data source
             def add_data_source():
                 st.session_state['data_sources'].append({"type": "", "details": "", "code_language": "", "code_fragment": ""})
+                st.session_state['data_sources_count'] += 1
+                st.rerun()  # Use st.rerun to refresh the UI
 
+            # Delete a specific data source
             def delete_data_source(index):
-                if st.session_state['data_sources_count'] > 1 and index > 0:
+                if st.session_state['data_sources_count'] > 1:
                     st.session_state['data_sources'].pop(index)
                     st.session_state['data_sources_count'] -= 1
+                    st.rerun()  # Use st.rerun to refresh the UI
 
             for i in range(st.session_state['data_sources_count']):
                 st.subheader(f"Duomenų šaltinis {i + 1}")
                 col1, col2 = st.columns([1, 3])
 
                 with col1:
-                    st.selectbox(f"Tipas", options=["DWH", "Sharepoint", "Excel", "API", "Kita"], key=f"type_{i}")
+                    st.selectbox(f"Tipas", options=["DWH", "Sharepoint", "Excel", "API", "Kita"], 
+                                key=f"type_{i}", index=0 if st.session_state['data_sources'][i]['type'] == "" else st.session_state['data_sources'][i]['type'])
                 with col2:
-                    st.text_input(f"Serveris/Duomenų bazė/Schema/Lenta/Pavadinimas", placeholder="Pateikite detales apie šaltinį", key=f"details_{i}")
+                    st.text_input(f"Serveris/Duomenų bazė/Schema/Lenta/Pavadinimas", 
+                                placeholder="Pateikite detales apie šaltinį", 
+                                value=st.session_state['data_sources'][i]['details'], 
+                                key=f"details_{i}")
 
                 # Code-related input
-                st.text_area(f"Komentaras apie šaltinį ir jo ypatumus", placeholder="Pateikite komentarą apie šaltinį", key=f"code_fragment_{i}")
+                st.text_area(f"Komentaras apie šaltinį ir jo ypatumus", 
+                            placeholder="Pateikite komentarą apie šaltinį", 
+                            value=st.session_state['data_sources'][i]['code_fragment'], 
+                            key=f"code_fragment_{i}")
 
                 # Comment for code explanation
-                st.text_input(f"Naudinga nuoroda (pvz. Gitlab nuoroda į atlitkas šaltinio transformacijas)", placeholder="Pridėkite šaltinio naudingą nuorodoą", key=f"code_comment_{i}")
+                st.text_input(f"Naudinga nuoroda (pvz. Gitlab nuoroda į atlitkas šaltinio transformacijas)", 
+                            placeholder="Pridėkite šaltinio naudingą nuorodoą", 
+                            value=st.session_state['data_sources'][i]['code_language'], 
+                            key=f"code_comment_{i}")
 
                 if st.session_state['data_sources_count'] > 1 and i > 0:
                     if st.button(f"Pašalinti šaltinį {i + 1}", key=f"delete_{i}"):
@@ -622,10 +637,9 @@ def ataskaitos_dokumentacija_page():
                 if i < st.session_state['data_sources_count'] - 1:
                     st.markdown("---")
 
-                if i == st.session_state['data_sources_count'] - 1:
-                    if st.button("Pridėti naują duomenų šaltinį"):
-                        add_data_source()
-                        st.session_state['data_sources_count'] += 1
+            # Add new data source button
+            if st.button("Pridėti naują duomenų šaltinį"):
+                add_data_source()
 
             st.markdown('<div class="center-button">', unsafe_allow_html=True)
             if st.button("Tęsti", key="section2"):
@@ -633,6 +647,7 @@ def ataskaitos_dokumentacija_page():
                 st.session_state['current_step'] += 1
                 st.success("Perėjote į kitą žingsnį!")
             st.markdown('</div>', unsafe_allow_html=True)
+
 
     # Section 3: Įrankio konfiguracija (Step 3)
     if st.session_state['current_step'] >= 3:
@@ -727,7 +742,6 @@ styles = {
     },
 }
 
-
 def show_footer():
     st.markdown("""
     <style>
@@ -741,16 +755,17 @@ def show_footer():
     }
     </style>
     <div class="footer">
-        © 2024 ESO.
+        Jei turite klausimų ar kažkas neveikia, praneškite DAS komandai arba Nedui Vaitkui | © 2024 ESO.
     </div>
     """, unsafe_allow_html=True)
+    
     
 
 def main():
     # Define a compact, responsive navbar with refined styles
     page = option_menu(
         menu_title=None,  # Hide the menu title
-        options=["Pagrindinis", "Forma", "Dokumentacija"],  # Navbar options
+        options=["Namai", "Forma", "Dokumentacija"],  # Navbar options
         icons=["house", "clipboard", "book"],  # Icons for each option
         menu_icon="cast",  # Optional menu icon
         default_index=0,  # Default selected index
@@ -783,8 +798,9 @@ def main():
         },
     )
 
+
     # Display selected page content
-    if page == "Pagrindinis":
+    if page == "Namai":
         pagrindinis_page()
     elif page == "Forma":
         top_ataskaitos_page()
