@@ -29,6 +29,7 @@ def pagrindinis_page():
     </style>
     <div class='sidebar-title'>Naudingos nuorodos</div>
 """, unsafe_allow_html=True)
+    
 
     # Adding custom CSS for card-like styling
     st.markdown("""
@@ -210,6 +211,7 @@ def top_ataskaitos_page():
                     })
         except Exception as e:
             st.error(f"Duomenų nepavyko išsiųsti: {e}")
+            st.info("Kreiptis į DAS komandą arba Nedą Vaitkų dėl pagalbos.")
 
 
     # Load report titles from Excel
@@ -509,6 +511,7 @@ def ataskaitos_dokumentacija_page():
         except Exception as e:
             # Handle any exceptions that occur during the database operation
             st.error(f"Įvyko klaida siunčiant duomenis į duomenų bazę: {str(e)}")
+            st.info("Kreiptis į DAS komandą arba Nedą Vaitkų dėl pagalbos.")
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # Initialize session state variables if not already present
     def initialize_session_state():
@@ -591,8 +594,7 @@ def ataskaitos_dokumentacija_page():
                 st.session_state['attempted_section']['section1'] = True
                 next_section('section1')
             st.markdown('</div>', unsafe_allow_html=True)
-
-    # Section 2: Duomenų šaltiniai (Step 2)
+            
     # Section 2: Duomenų šaltiniai (Step 2)
     if st.session_state['current_step'] >= 2:
         with st.expander("2. Duomenų šaltiniai", expanded=False):
