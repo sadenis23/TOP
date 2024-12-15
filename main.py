@@ -308,10 +308,22 @@ def top_ataskaitos_page():
                                         ['Pasirinkite...', 'Naudojama tik išimtiniais atvejais', 'Labai retai', 'Kartais', 'Dažnai', 'Labai dažnai', 'Nuolat'],
                                         key="naudojimo_daznumas", disabled=disabled_state)
 
-            EsoBLNaudojimas = st.radio("Ar naudojama ESO BL rodiklių lentoje? *", 
-                                    ['Pasirinkite...', 'Taip', 'Ne', 'Nežinau'], key="eso_bl", disabled=disabled_state)
+            EsoBLNaudojimas = st.radio(
+                "Ar naudojama ESO BL rodiklių lentoje? *", 
+                ['Taip', 'Ne', 'Nežinau'],  # Removed 'Pasirinkite...' option
+                index=1,  # Default index set to 'Ne'
+                key="eso_bl", 
+                disabled=disabled_state
+            )
 
-            Isore = st.radio("Ar išeina į išorę? *", ['Pasirinkite...', 'Taip', 'Ne', 'Nežinau'], key="isore", disabled=disabled_state)
+            # Radio button for "Ar išeina į išorę?"
+            Isore = st.radio(
+                "Ar išeina į išorę? *", 
+                ['Taip', 'Ne', 'Nežinau'],  # Removed 'Pasirinkite...' option
+                index=1,  # Default index set to 'Ne'
+                key="isore", 
+                disabled=disabled_state
+            )
 
             st.subheader("Komentarai ir pastabos")
             KomentaraiPastabos = st.text_area("Komentarai / Pastabos *", 
@@ -357,7 +369,7 @@ def top_ataskaitos_page():
                 status_message = st.empty()
 
                 # Show "Please wait" message
-                status_message.info("Palaukite, duomenys yra siunčiami...")
+                status_message.info("Palaukite, duomenys siunčiami į duomenų sandėlį...")
 
                 # Set flag to prevent further submissions
                 st.session_state.is_form_submitted = True
@@ -690,34 +702,34 @@ def ataskaitos_dokumentacija_page():
 
     # Section 4: Komentarai / Pastabos (Step 4)
     if st.session_state['current_step'] >= 4:
-        with st.expander("4. Papildoma informacija", expanded=False):
-            st.subheader("Papildoma informacija")
-            st.session_state['comments'] = st.text_area("Pateikite pagrindinius įrankio iššūkius ar komentarus", placeholder="Pateikite papildomus komentarus arba pastabas")
+            with st.expander("4. Papildoma informacija", expanded=False):
+                st.subheader("Papildoma informacija")
+                st.session_state['comments'] = st.text_area("Pateikite pagrindinius įrankio iššūkius ar komentarus", placeholder="Pateikite papildomus komentarus arba pastabas")
 
-            st.markdown('<div class="center-button">', unsafe_allow_html=True)
-            
-            # Check if the form has already been submitted
-            if not st.session_state.get('form_submitted', False):
-                if st.button("Baigti pildyti ir pateikti duomenis", key="section4"):
-                    st.session_state['attempted_section']['section4'] = True
-                    st.session_state['form_submitted'] = True  # Mark the form as submitted
+                st.markdown('<div class="center-button">', unsafe_allow_html=True)
+                
+                # Check if the form has already been submitted
+                if not st.session_state.get('form_submitted', False):
+                    if st.button("Baigti pildyti ir pateikti duomenis", key="section4"):
+                        st.session_state['attempted_section']['section4'] = True
+                        st.session_state['form_submitted'] = True  # Mark the form as submitted
 
-                    # Show the blue info message while data is being sent
-                    sending_message = st.info("Palaukite, siunčiami duomenys...")
+                        # Show the blue info message while data is being sent
+                        sending_message = st.info("Palaukite, duomenys siunčiami į duomenų sandėlį...")
 
-                    # Trigger the SQL insertion process
-                    store_to_sql()
+                        # Trigger the SQL insertion process
+                        store_to_sql()
 
-                    # Replace the blue message with a success message
-                    sending_message.empty()
-                    st.balloons()
+                        # Replace the blue message with a success message
+                        sending_message.empty()
+                        st.balloons()
 
-                    # Move to the next section or indicate completion
-                    next_section('section4')
-            else:
-                st.warning("Dokumentacija jau buvo pateikta šios sesijos metu. Negalima pateikti antrą kartą.")  # Display a message if already submitted
+                        # Move to the next section or indicate completion
+                        next_section('section4')
+                else:
+                    st.warning("Dokumentacija jau buvo pateikta šios sesijos metu. Negalima pateikti antrą kartą.")  # Display a message if already submitted
 
-            st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
 
 #------------------------------------------------------------------------------------------------------
 # Main app logic
@@ -755,11 +767,10 @@ def show_footer():
     }
     </style>
     <div class="footer">
-        Jei turite klausimų ar kažkas neveikia, praneškite DAS komandai arba Nedui Vaitkui | © 2024 ESO.
+        Jei turite klausimų ar kažkas neveikia, būtinai praneškite DAS komandai arba Nedui Vaitkui | © 2024 ESO.
     </div>
     """, unsafe_allow_html=True)
-    
-    
+     
 
 def main():
     # Define a compact, responsive navbar with refined styles
@@ -797,7 +808,6 @@ def main():
             },
         },
     )
-
 
     # Display selected page content
     if page == "Namai":
